@@ -13,11 +13,11 @@ export function ImageCarousel({ images = [], productName = 'Product' }) {
     <div className="flex flex-col gap-3">
 
       {/* Main Image */}
-      <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-800">
+      <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50">
         <img
           src={imgs[active]}
           alt={`${productName} – view ${active + 1}`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           loading="lazy"
           onError={(e) => { e.target.src = getProductImage([]) }}
         />

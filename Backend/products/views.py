@@ -30,8 +30,7 @@ class CategoryListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        # Only return root categories; children are nested via serializer
-        return Category.objects.filter(parent_category__isnull=True).prefetch_related('children')
+        return Category.objects.filter(parent_category__isnull=True).prefetch_related('children').order_by('name')
 
 
 class CategoryCreateView(generics.CreateAPIView):
@@ -76,6 +75,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
             .select_related('vendor', 'category')
             .prefetch_related('images')
             .filter(is_active=True)
+            .order_by('-created_at')
         )
 
     def perform_create(self, serializer):
@@ -127,6 +127,7 @@ class VendorProductListView(generics.ListAPIView):
             .select_related('vendor', 'category')
             .prefetch_related('images')
             .filter(vendor=self.request.user.vendor_profile)
+            .order_by('-created_at')
         )
 
 

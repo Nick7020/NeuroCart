@@ -9,6 +9,7 @@ function normalizeUser(data) {
     ...data,
     _id: data._id || data.id,
     name: data.name || [data.first_name, data.last_name].filter(Boolean).join(' ') || data.email,
+    isApproved: data.is_approved ?? data.isApproved,
   }
 }
 

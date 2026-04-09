@@ -12,11 +12,11 @@ export function VendorOrders() {
   const [orders, setOrders] = useState(null)
   const [filter, setFilter] = useState('ALL')
 
-  const allOrders = orders ?? data?.orders ?? []
-  const filtered = filter === 'ALL' ? allOrders : allOrders.filter(o => o.status === filter)
+  const allOrders = orders ?? data?.results ?? data ?? []
+  const filtered = filter === 'ALL' ? allOrders : allOrders.filter(o => o.status?.toUpperCase() === filter)
 
   const handleUpdate = (id, status) => {
-    setOrders(prev => (prev ?? data?.orders ?? []).map(o => o._id === id ? { ...o, status } : o))
+    setOrders(prev => (prev ?? allOrders).map(o => (o.id || o._id) === id ? { ...o, status } : o))
   }
 
   const counts = FILTERS.reduce((acc, f) => {
@@ -64,7 +64,7 @@ export function VendorOrders() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(order => (
-            <OrderCard key={order._id} order={order} onUpdate={handleUpdate} />
+            <OrderCard key={order.id || order._id} order={order} onUpdate={handleUpdate} />
           ))}
         </div>
       )}

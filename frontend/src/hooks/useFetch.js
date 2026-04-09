@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 
 export function useFetch(fn, deps = []) {
   const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(fn != null)
   const [error, setError] = useState(null)
   const fnRef = useRef(fn)
   fnRef.current = fn
 
   useEffect(() => {
+    if (!fnRef.current) { setLoading(false); return }
     let cancelled = false
     setLoading(true)
     setError(null)

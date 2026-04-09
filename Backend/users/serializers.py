@@ -38,8 +38,27 @@ class UserLoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
+    is_approved = serializers.SerializerMethodField()
+    vendor_profile_id = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'role', 'first_name', 'last_name', 'created_at', 'updated_at')
+        fields = ('id', 'email', 'role', 'first_name', 'last_name', 'is_approved',
+                  'vendor_profile_id', 'created_at', 'updated_at')
         read_only_fields = ('id', 'email', 'role', 'created_at', 'updated_at')
+
+    def get_is_approved(self, obj):
+        if obj.role != 'vendor':
+            return None
+        try:
+            return obj.vendor_profile.verification_status == 'approved'
+        except Exception:
+            return False
+
+    def get_vendor_profile_id(self, obj):
+        if obj.role != 'vendor':
+            return None
+        try:
+            return str(obj.vendor_profile.id)
+        except Exception:
+            return None

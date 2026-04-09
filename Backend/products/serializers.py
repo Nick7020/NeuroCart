@@ -27,15 +27,20 @@ class ProductListSerializer(serializers.ModelSerializer):
     vendor_name = serializers.CharField(source='vendor.shop_name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     primary_image = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'price', 'stock', 'is_active', 'vendor_name',
-                  'category_name', 'primary_image', 'created_at')
+        fields = ('id', 'name', 'price', 'original_price', 'discount', 'stock',
+                  'is_active', 'vendor_name', 'category_name', 'primary_image',
+                  'images', 'created_at')
 
     def get_primary_image(self, obj):
         img = obj.images.filter(is_primary=True).first()
         return img.image_url if img else None
+
+    def get_images(self, obj):
+        return [img.image_url for img in obj.images.all()]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -135,10 +140,18 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
-    """Vendor write operations."""
+    """Vendor write operations — includes image URLs."""
+    images = serializers.ListField(
+        child=serializers.URLField(),
+        required=False,
+        write_only=True,
+        default=list,
+    )
+
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'price', 'stock', 'category', 'is_active')
+        fields = ('id', 'name', 'description', 'price', 'original_price', 'discount',
+                  'stock', 'category', 'is_active', 'images')
         read_only_fields = ('id',)
 
     def validate_price(self, value):
@@ -150,3 +163,20 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError('Stock cannot be negative.')
         return value
+
+    def create(self, validated_data):
+        image_urls = validated_data.pop('images', [])
+        product = super().create(validated_data)
+        for i, url in enumerate(image_urls):
+            ProductImage.objects.create(product=product, image_url=url, is_primary=(i == 0))
+        return product
+
+    def update(self, instance, validated_data):
+        image_urls = validated_data.pop('images', None)
+        product = super().update(instance, validated_data)
+        if image_urls is not None:
+            # Replace all images
+            instance.images.all().delete()
+            for i, url in enumerate(image_urls):
+                ProductImage.objects.create(product=product, image_url=url, is_primary=(i == 0))
+        return product

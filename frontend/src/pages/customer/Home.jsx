@@ -45,7 +45,7 @@ export function Home() {
         ...(range.max !== undefined && { maxPrice: range.max }),
       }
       const { data } = await productService.getAll(params)
-      let list = data.products || data || []
+      let list = data.results || data.products || data || []
       if (sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price)
       if (sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price)
       if (sort === 'discount') list = [...list].sort((a, b) => (b.discount || 0) - (a.discount || 0))
@@ -153,7 +153,7 @@ export function Home() {
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', minWidth: 0 }}
                 >
                   {rowProducts.map(p => (
-                    <div key={p._id} className="flex-shrink-0 w-[calc(20%-13px)]">
+                    <div key={p.id || p._id} className="flex-shrink-0 w-[calc(20%-13px)]">
 
                       <ProductCard product={p} />
                     </div>

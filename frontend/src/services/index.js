@@ -55,10 +55,17 @@ export const userService = {
 
 export const vendorService = {
   register: (data) => api.post('/vendors/register', data),
+  dashboard: () => api.get('/vendor/dashboard'),
   getOrders: () => api.get('/vendor/orders/'),
   acceptOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'CONFIRMED' }),
   rejectOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'CANCELLED' }),
   analytics: () => api.get('/vendor/analytics'),
+  getProducts: () => api.get('/vendor/products'),
+  updateProfile: (data) => api.put('/vendor/profile', data),
+}
+
+export const categoryService = {
+  getAll: () => api.get('/categories/'),
 }
 
 export const adminService = {
