@@ -103,6 +103,7 @@ export function Navbar({ onCartClick }) {
                       { to: '/profile', icon: <User size={14} />, label: 'Profile' },
                       { to: '/orders', icon: <Package size={14} />, label: 'My Orders' },
                       ...(user.role === 'admin' ? [{ to: '/admin', icon: <Zap size={14} />, label: 'Admin Panel' }] : []),
+                      ...(user.role === 'vendor' ? [{ to: '/vendor', icon: <Zap size={14} />, label: 'Vendor Panel' }] : []),
                     ].map((item) => (
                       <Link key={item.to} to={item.to} onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
@@ -145,7 +146,7 @@ export function Navbar({ onCartClick }) {
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="input pl-9 text-sm" />
               </form>
-              {[{ to: '/', label: '🏠 Home' }, { to: '/orders', label: '📦 Orders' }, { to: '/profile', label: '👤 Profile' }].map(({ to, label }) => (
+              {[{ to: '/', label: 'Home' }, { to: '/orders', label: 'Orders' }, { to: '/profile', label: 'Profile' }].map(({ to, label }) => (
                 <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                   className="block px-3 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors">{label}</Link>
               ))}
