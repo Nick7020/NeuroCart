@@ -39,7 +39,7 @@ export function ProductCard({ product }) {
     <motion.div whileHover={{ y: -5, scale: 1.02 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}>
       <Link to={`/products/${product._id}`}
         className="block bg-white rounded-2xl overflow-hidden group transition-all duration-300"
-        style={{ border: '1px solid #e8edf2', boxShadow: '0 2px 12px rgba(26,50,99,0.06)' }}
+        style={{ border: '2px solid #e8edf2', boxShadow: '0 2px 12px rgba(26,50,99,0.06)' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#1A3263'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(26,50,99,0.12)' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8edf2'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(26,50,99,0.06)' }}
       >
@@ -101,12 +101,13 @@ export function ProductCard({ product }) {
           </div>
 
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex flex-col">
               <span className="text-base font-extrabold text-gray-900">{formatCurrency(product.price)}</span>
               {product.originalPrice > product.price && (
-                <span className="text-xs text-gray-400 line-through ml-1.5">{formatCurrency(product.originalPrice)}</span>
+                <span className="text-xs text-gray-400 line-through">{formatCurrency(product.originalPrice)}</span>
               )}
             </div>
+
             <motion.button onClick={handleAdd} disabled={product.stock === 0 || adding}
               whileTap={{ scale: 0.9 }}
               className="w-8 h-8 rounded-xl flex items-center justify-center transition-all disabled:opacity-50 shadow-sm"

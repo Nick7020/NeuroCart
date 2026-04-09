@@ -130,6 +130,34 @@ function mockHandler(config) {
   // ── Payments ──────────────────────────────────────────────────────────────
   if (url.includes('/payments')) return { success: true, transactionId: 'txn_' + Date.now() }
 
+  // ── Vendor Orders ─────────────────────────────────────────────────────────
+  if (url.includes('/vendor/orders') && method === 'get') return { orders: MOCK_ORDERS }
+  if (url.match(/\/vendor\/orders\/[^/?]+\/accept/)) {
+    const id = url.split('/vendor/orders/')[1].split('/')[0]
+    const o = MOCK_ORDERS.find(o => o._id === id)
+    if (o) o.status = 'CONFIRMED'
+    return { message: 'Accepted' }
+  }
+  if (url.match(/\/vendor\/orders\/[^/?]+\/reject/)) {
+    const id = url.split('/vendor/orders/')[1].split('/')[0]
+    const o = MOCK_ORDERS.find(o => o._id === id)
+    if (o) o.status = 'CANCELLED'
+    return { message: 'Rejected' }
+  }
+
+  // ── Invoices ──────────────────────────────────────────────────────────────
+  if (url.includes('/invoices') && method === 'get') {
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]')
+    return { invoices }
+  }
+  if (url.includes('/invoices') && method === 'post') {
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]')
+    const inv = { ...JSON.parse(config.data || '{}'), _id: 'inv_' + Date.now(), createdAt: new Date().toISOString() }
+    invoices.unshift(inv)
+    sessionStorage.setItem('invoices', JSON.stringify(invoices))
+    return { invoice: inv }
+  }
+
   return { message: 'Mock OK' }
 }
 
