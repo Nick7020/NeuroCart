@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Star, Heart, Zap } from 'lucide-react'
 import { formatCurrency } from '../../utils'
+import { getProductImage } from '../../utils/images'
 import { useCart } from '../../context/CartContext'
 import { useNotification } from '../../context/NotificationContext'
 import { useState } from 'react'
@@ -45,9 +46,11 @@ export function ProductCard({ product }) {
         {/* Image */}
         <div className="relative overflow-hidden aspect-square bg-gray-50">
           <img
-            src={product.images?.[0] || `https://placehold.co/300x300/f0f4ff/1A3263?text=${encodeURIComponent(product.name)}`}
+            src={getProductImage(product.images)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
+            onError={(e) => { e.target.src = getProductImage([]) }}
           />
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             style={{ background: 'linear-gradient(to top, rgba(26,50,99,0.15), transparent)' }} />
