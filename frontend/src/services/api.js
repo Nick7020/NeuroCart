@@ -26,15 +26,16 @@ function mockHandler(config) {
   }
   if (url.includes('/auth/login')) {
     const isAdmin = body.email?.includes('admin')
-    const isStaff = body.email?.includes('staff')
-    const role = isAdmin ? 'admin' : isStaff ? 'staff' : 'customer'
-    const name = isAdmin ? 'Admin User' : isStaff ? 'Staff User' : 'Demo User'
-    const mockUser = { _id: 'demo-' + role, name, email: body.email || 'demo@neurocart.com', role, createdAt: new Date().toISOString() }
+    const isVendor = body.email?.includes('vendor')
+    const role = isAdmin ? 'admin' : isVendor ? 'vendor' : 'customer'
+    const name = isAdmin ? 'Admin User' : isVendor ? 'Meera Joshi' : 'Demo User'
+    const mockUser = { _id: 'demo-' + role, name, email: body.email || 'demo@neurocart.com', role, storeName: isVendor ? 'Meera Electronics' : undefined, isApproved: isVendor ? true : undefined, createdAt: new Date().toISOString() }
     sessionStorage.setItem('mockUser', JSON.stringify(mockUser))
     return { accessToken: 'mock-token-' + role, user: mockUser }
   }
   if (url.includes('/auth/register')) {
-    const mockUser = { _id: 'demo-customer', name: body.name || 'Demo User', email: body.email, role: 'customer', createdAt: new Date().toISOString() }
+    const role = body.role === 'vendor' ? 'vendor' : 'customer'
+    const mockUser = { _id: 'demo-' + role, name: body.name || 'Demo User', email: body.email, role, storeName: body.storeName, isApproved: role === 'vendor' ? false : undefined, createdAt: new Date().toISOString() }
     sessionStorage.setItem('mockUser', JSON.stringify(mockUser))
     return { accessToken: 'mock-token', user: mockUser }
   }
@@ -99,6 +100,7 @@ function mockHandler(config) {
   if (url.includes('/ai/recommendations')) return { products: MOCK_PRODUCTS.slice(0, 5) }
 
   // ── Users ─────────────────────────────────────────────────────────────────
+  if (url.includes('/users/customers') && method === 'get') return { users: MOCK_USERS.filter(u => u.role === 'customer') }
   if (url.includes('/users') && method === 'get') return { users: MOCK_USERS }
   if (url.match(/\/users\/[^/?]+\/block/)) {
     const id = url.split('/users/')[1].split('/')[0]
@@ -112,7 +114,18 @@ function mockHandler(config) {
     if (u) u.isBlocked = false
     return { message: 'Unblocked' }
   }
-  if (url.match(/\/users\/[^/?]+$/) && method === 'put') return { message: 'Updated' }
+  if (url.match(/\/users\/[^/?]+\/approve/)) {
+    const id = url.split('/users/')[1].split('/')[0]
+    const u = MOCK_USERS.find(u => u._id === id)
+    if (u) u.isApproved = true
+    return { message: 'Vendor approved' }
+  }
+  if (url.match(/\/users\/[^/?]+$/) && method === 'put') {
+    const id = url.split('/users/')[1]
+    const u = MOCK_USERS.find(u => u._id === id)
+    if (u) Object.assign(u, body)
+    return { message: 'Updated' }
+  }
 
   // ── Payments ──────────────────────────────────────────────────────────────
   if (url.includes('/payments')) return { success: true, transactionId: 'txn_' + Date.now() }

@@ -174,9 +174,11 @@ export const MOCK_ANALYTICS = {
 export const MOCK_USERS = [
   { _id: 'u1', name: 'Rahul Sharma', email: 'rahul@example.com', role: 'customer', isBlocked: false, createdAt: new Date(Date.now() - 30 * 86400000).toISOString() },
   { _id: 'u2', name: 'Priya Patel', email: 'priya@example.com', role: 'customer', isBlocked: false, createdAt: new Date(Date.now() - 20 * 86400000).toISOString() },
-  { _id: 'u3', name: 'Amit Kumar', email: 'amit@example.com', role: 'staff', isBlocked: false, createdAt: new Date(Date.now() - 60 * 86400000).toISOString() },
+  { _id: 'u3', name: 'Amit Kumar', email: 'amit@example.com', role: 'customer', isBlocked: false, createdAt: new Date(Date.now() - 60 * 86400000).toISOString() },
   { _id: 'u4', name: 'Sneha Reddy', email: 'sneha@example.com', role: 'customer', isBlocked: true, createdAt: new Date(Date.now() - 10 * 86400000).toISOString() },
   { _id: 'u5', name: 'Vikram Singh', email: 'vikram@example.com', role: 'admin', isBlocked: false, createdAt: new Date(Date.now() - 90 * 86400000).toISOString() },
+  { _id: 'u6', name: 'Meera Joshi', email: 'vendor@neurocart.com', role: 'vendor', isBlocked: false, isApproved: true, storeName: 'Meera Electronics', createdAt: new Date(Date.now() - 15 * 86400000).toISOString() },
+  { _id: 'u7', name: 'Ravi Gupta', email: 'ravi@example.com', role: 'vendor', isBlocked: false, isApproved: false, storeName: 'Ravi Sports', createdAt: new Date(Date.now() - 5 * 86400000).toISOString() },
 ]
 
 export const MOCK_REPORTS = {
