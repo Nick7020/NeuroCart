@@ -13,6 +13,7 @@ from .serializers import (
     OrderDetailSerializer,
     OrderItemSerializer,
     OrderItemStatusUpdateSerializer,
+    AdminOrderListSerializer,
 )
 from .invoice_serializers import InvoiceSerializer
 from services import order_service
@@ -144,6 +145,24 @@ class VendorOrderItemStatusView(APIView):
             )
 
         return Response(OrderItemSerializer(order_item).data)
+
+
+class AdminOrderListView(generics.ListAPIView):
+    """GET /api/admin/orders/ — admin-only, paginated list of all orders."""
+    serializer_class = AdminOrderListSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_queryset(self):
+        qs = (
+            Order.objects
+            .select_related('user')
+            .annotate(item_count=Count('items'))
+            .order_by('-created_at')
+        )
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
 
 
 class InvoiceListView(generics.ListAPIView):

@@ -5,6 +5,8 @@ python -m venv venv
 ```
 venv\Scripts\activate
 ```
+mustafa@gmail.com
+200418
 
 ## Razorpay Setup
 

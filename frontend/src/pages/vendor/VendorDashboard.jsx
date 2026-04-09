@@ -3,22 +3,23 @@ import { vendorService } from '../../services'
 import { useAuth } from '../../context/AuthContext'
 import { Spinner } from '../../components/ui/Spinner'
 import { formatCurrency } from '../../utils'
-import { ShoppingBag, Package, TrendingUp, DollarSign, Clock } from 'lucide-react'
+import { ShoppingBag, TrendingUp, DollarSign, Clock } from 'lucide-react'
 
 export function VendorDashboard() {
   const { user } = useAuth()
   const { data, loading } = useFetch(() => vendorService.dashboard(), [])
 
+  const shopName      = data?.shop_name      ?? ''
   const totalRevenue  = data?.total_revenue  ?? 0
-  const totalOrders   = data?.total_orders   ?? 0
-  const itemCount     = data?.order_item_count ?? 0
+  const orderCount    = data?.order_count    ?? 0
+  const pendingOrders = data?.pending_orders ?? 0
   const topProducts   = data?.top_products   ?? []
 
   const kpis = [
-    { label: 'Total Revenue',  value: formatCurrency(totalRevenue), icon: <DollarSign size={20} />,  bg: '#f5f3ff', color: '#7c3aed' },
-    { label: 'Total Orders',   value: totalOrders,                  icon: <ShoppingBag size={20} />, bg: '#eff6ff', color: '#2563eb' },
-    { label: 'Items Sold',     value: itemCount,                    icon: <Package size={20} />,     bg: '#fffbeb', color: '#d97706' },
-    { label: 'Top Products',   value: topProducts.length,           icon: <TrendingUp size={20} />,  bg: '#f0fdf4', color: '#16a34a' },
+    { label: 'Total Revenue',   value: formatCurrency(totalRevenue), icon: <DollarSign size={20} />,  bg: '#f5f3ff', color: '#7c3aed' },
+    { label: 'Total Orders',    value: orderCount,                   icon: <ShoppingBag size={20} />, bg: '#eff6ff', color: '#2563eb' },
+    { label: 'Pending Orders',  value: pendingOrders,                icon: <Clock size={20} />,       bg: '#fffbeb', color: '#d97706' },
+    { label: 'Top Products',    value: topProducts.length,           icon: <TrendingUp size={20} />,  bg: '#f0fdf4', color: '#16a34a' },
   ]
 
   // Show pending approval banner if vendor is not yet approved
@@ -41,7 +42,7 @@ export function VendorDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-gray-900">Vendor Dashboard</h1>
+        <h1 className="text-2xl font-extrabold text-gray-900">{shopName || 'Vendor Dashboard'}</h1>
         <p className="text-gray-400 text-sm mt-1">Overview of your store performance</p>
       </div>
 

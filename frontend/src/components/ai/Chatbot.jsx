@@ -5,6 +5,7 @@ import { ChatMessage } from './ChatMessage'
 import { QuickOptions } from './QuickOptions'
 import { TicketForm } from './TicketForm'
 import { getBotReply, getTimestamp, QUICK_OPTIONS } from '../../utils/chatbot'
+import { aiService } from '../../services'
 
 const CHAT_ID = 'NC-' + Math.random().toString(36).slice(2, 8).toUpperCase()
 
@@ -79,11 +80,23 @@ export function Chatbot() {
 
     // Typing indicator
     setTyping(true)
-    setTimeout(() => {
-      setTyping(false)
-      const reply = getBotReply(text)
-      addBotMessage(reply.text, reply.options, reply.action)
-    }, 900)
+
+    aiService.chat({ message: text })
+      .then(response => {
+        setTyping(false)
+        const replyText = response.data?.reply
+        if (replyText) {
+          addBotMessage(replyText, QUICK_OPTIONS)
+        } else {
+          const reply = getBotReply(text)
+          addBotMessage(reply.text, reply.options, reply.action)
+        }
+      })
+      .catch(() => {
+        setTyping(false)
+        const reply = getBotReply(text)
+        addBotMessage(reply.text, reply.options, reply.action)
+      })
   }
 
   const handleOptionClick = (opt) => {

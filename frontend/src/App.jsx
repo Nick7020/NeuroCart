@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
-import { NotificationProvider } from './context/NotificationContext'
+import { NotificationProvider, useNotification } from './context/NotificationContext'
 import { ProtectedRoute } from './components/ui/ProtectedRoute'
+import { setNotify } from './services/api'
 
 import { CustomerLayout } from './layouts/CustomerLayout'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -31,11 +33,20 @@ import { VendorProducts } from './pages/vendor/VendorProducts'
 import { VendorOrders } from './pages/vendor/VendorOrders'
 import { VendorCustomers } from './pages/vendor/VendorCustomers'
 
+// Wires the NotificationContext notify function into the api.js interceptor
+// without creating a circular import (api.js doesn't import React context directly)
+function NotifyBridge() {
+  const { notify } = useNotification()
+  useEffect(() => { setNotify(notify) }, [notify])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
+          <NotifyBridge />
           <CartProvider>
             <Routes>
               {/* Auth */}

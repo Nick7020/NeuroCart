@@ -10,7 +10,8 @@ import { FileText, Eye } from 'lucide-react'
 export function AdminInvoices() {
   const { data, loading } = useFetch(() => invoiceService.getAll(), [])
   const [selected, setSelected] = useState(null)
-  const invoices = data?.invoices || []
+  // Backend returns paginated { results: [...] } or { invoices: [...] }
+  const invoices = data?.results ?? data?.invoices ?? []
 
   return (
     <div className="space-y-6">
@@ -37,26 +38,25 @@ export function AdminInvoices() {
               <tbody className="divide-y divide-gray-50">
                 {invoices.map(inv => {
                   const order = inv.order || {}
-                  const items = order.items || []
-                  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
-                  const total = subtotal * 1.18
+                  const customerName = order.shipping_address?.name || 'N/A'
+                  const itemCount = order.items?.length ?? '—'
                   return (
-                    <tr key={inv._id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                             <FileText size={14} className="text-blue-600" />
                           </div>
                           <div>
-                            <p className="font-bold text-gray-800 text-xs">{inv.orderId}</p>
-                            <p className="text-[10px] text-gray-400">#{order._id?.slice(-8).toUpperCase()}</p>
+                            <p className="font-bold text-gray-800 text-xs">{inv.invoice_number}</p>
+                            <p className="text-[10px] text-gray-400">#{order.id?.slice(-8).toUpperCase() || '—'}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 font-medium text-gray-700">{order.address?.name || 'N/A'}</td>
-                      <td className="px-5 py-4 text-gray-500">{formatDate(inv.createdAt)}</td>
-                      <td className="px-5 py-4 text-gray-500">{items.length}</td>
-                      <td className="px-5 py-4 font-bold" style={{ color: '#1A3263' }}>{formatCurrency(total)}</td>
+                      <td className="px-5 py-4 font-medium text-gray-700">{customerName}</td>
+                      <td className="px-5 py-4 text-gray-500">{formatDate(inv.issued_at)}</td>
+                      <td className="px-5 py-4 text-gray-500">{itemCount}</td>
+                      <td className="px-5 py-4 font-bold" style={{ color: '#1A3263' }}>{formatCurrency(inv.total_amount)}</td>
                       <td className="px-5 py-4">
                         <button onClick={() => setSelected(inv)}
                           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">

@@ -76,7 +76,8 @@ export const categoryService = {
 
 export const adminService = {
   getVendors: () => api.get('/admin/vendors'),
-  verifyVendor: (id) => api.post(`/admin/vendors/${id}/verify`),
+  verifyVendor: (id) => api.patch(`/admin/vendors/${id}/verify`),
+  getOrders: (params) => api.get('/admin/orders/', { params }),
 }
 
 // No backend implementation yet — frontend/mock only

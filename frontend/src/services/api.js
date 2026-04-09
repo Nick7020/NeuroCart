@@ -7,6 +7,10 @@ let accessToken = null
 export const setAccessToken = (t) => (accessToken = t)
 export const getAccessToken = () => accessToken
 
+// ─── Notify Setter (avoids circular import with NotificationContext) ──────────
+let notifyFn = null
+export const setNotify = (fn) => { notifyFn = fn }
+
 // ─── Mock Handler (pure data, no network) ────────────────────────────────────
 function mockHandler(config) {
   const url = config.url || ''
@@ -211,13 +215,15 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Only needed for real backend — 401 auto-refresh
+// Only needed for real backend — 401 auto-refresh + global error notifications
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
     if (MOCK_MODE) return Promise.reject(err)
     const original = err.config
-    if (err.response?.status === 401 && !original._retry) {
+    const status = err.response?.status
+
+    if (status === 401 && !original._retry) {
       original._retry = true
       try {
         const storedRefresh = localStorage.getItem('refreshToken')
@@ -230,7 +236,18 @@ api.interceptors.response.use(
         setAccessToken(null)
         window.location.href = '/login'
       }
+    } else if (status === 403) {
+      notifyFn?.('You do not have permission to perform this action.', 'error')
+    } else if (status === 404) {
+      notifyFn?.('The requested resource was not found.', 'error')
+    } else if (status === 500) {
+      notifyFn?.('A server error occurred. Please try again later.', 'error')
+    } else if (status >= 400 && status < 500) {
+      const detail = err.response?.data?.detail
+      const message = err.response?.data?.message
+      notifyFn?.(detail || message || 'An error occurred', 'error')
     }
+
     return Promise.reject(err)
   }
 )

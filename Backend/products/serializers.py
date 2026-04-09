@@ -36,7 +36,7 @@ class ProductListSerializer(serializers.ModelSerializer):
                   'images', 'created_at')
 
     def get_primary_image(self, obj):
-        img = obj.images.filter(is_primary=True).first()
+        img = obj.images.filter(is_primary=True).first() or obj.images.first()
         return img.image_url if img else None
 
     def get_images(self, obj):

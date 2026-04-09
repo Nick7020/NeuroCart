@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'orders',
     'payments',
     'analytics_app',
+    'ai_app',
 ]
 
 if DEBUG:

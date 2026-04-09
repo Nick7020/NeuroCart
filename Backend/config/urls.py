@@ -41,6 +41,9 @@ urlpatterns = [
     # Analytics (admin + vendor)
     path('api/admin/', include('analytics_app.admin_urls')),
     path('api/vendor/', include('analytics_app.vendor_urls')),
+
+    # AI Chatbot & Recommendations
+    path('api/ai/', include('ai_app.urls')),
 ]
 
 if settings.DEBUG:

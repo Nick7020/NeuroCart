@@ -43,11 +43,22 @@ class CheckoutSerializer(serializers.Serializer):
     shipping_address = serializers.DictField(required=False, allow_null=True, default=None)
 
 
+class AdminOrderListSerializer(serializers.ModelSerializer):
+    """Serializer for admin order list — includes user email and item count."""
+    user = serializers.EmailField(source='user.email', read_only=True)
+    item_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ('id', 'user', 'total_amount', 'status', 'item_count', 'created_at')
+        read_only_fields = fields
+
+
 class OrderItemStatusUpdateSerializer(serializers.Serializer):
     """Input serializer for vendor updating an order item's status."""
     VALID_TRANSITIONS = {
-        'pending': ['processing'],
-        'processing': ['shipped'],
+        'pending': ['processing', 'cancelled'],
+        'processing': ['shipped', 'cancelled'],
         'shipped': ['delivered'],
         'delivered': [],
         'cancelled': [],

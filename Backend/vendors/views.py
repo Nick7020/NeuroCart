@@ -57,9 +57,10 @@ class VendorDashboardView(APIView):
             qs = OrderItem.objects.filter(vendor=vendor)
             agg = qs.aggregate(
                 total_revenue=Sum('subtotal'),
-                order_item_count=Count('id'),
-                total_orders=Count('order', distinct=True),
+                order_count=Count('order', distinct=True),
             )
+
+            pending_orders = qs.filter(status='pending').count()
 
             top_products = list(
                 qs.values('product__id', 'product__name')
@@ -67,13 +68,15 @@ class VendorDashboardView(APIView):
                 .order_by('-revenue')[:5]
             )
         except Exception:
-            agg = {'total_revenue': None, 'order_item_count': 0, 'total_orders': 0}
+            agg = {'total_revenue': None, 'order_count': 0}
+            pending_orders = 0
             top_products = []
 
         return {
+            'shop_name': vendor.shop_name,
             'total_revenue': agg.get('total_revenue') or '0.00',
-            'total_orders': agg.get('total_orders') or 0,
-            'order_item_count': agg.get('order_item_count') or 0,
+            'order_count': agg.get('order_count') or 0,
+            'pending_orders': pending_orders,
             'top_products': top_products,
         }
 

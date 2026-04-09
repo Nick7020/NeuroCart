@@ -47,14 +47,23 @@ class SalesByPeriodSerializer(serializers.Serializer):
 
 
 class TopProductSerializer(serializers.Serializer):
-    product_id = serializers.UUIDField()
-    product_name = serializers.CharField()
+    product_id = serializers.UUIDField(allow_null=True)
+    product_name = serializers.CharField(allow_null=True)
     units_sold = serializers.IntegerField()
 
 
 class DailyRevenueSerializer(serializers.Serializer):
-    date = serializers.DateTimeField()
+    date = serializers.SerializerMethodField()
     revenue = serializers.DecimalField(max_digits=14, decimal_places=2)
+
+    def get_date(self, obj):
+        """Return date as ISO date string YYYY-MM-DD."""
+        d = obj.get('date')
+        if d is None:
+            return None
+        if hasattr(d, 'strftime'):
+            return d.strftime('%Y-%m-%d')
+        return str(d)[:10]
 
 
 class VendorAnalyticsSerializer(serializers.Serializer):

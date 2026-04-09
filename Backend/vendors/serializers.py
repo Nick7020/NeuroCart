@@ -41,7 +41,8 @@ class VendorVerificationSerializer(serializers.ModelSerializer):
 
 class VendorDashboardSerializer(serializers.Serializer):
     """Stats response for vendor dashboard (read-only, not model-bound)."""
+    shop_name = serializers.CharField()
     total_revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
-    total_orders = serializers.IntegerField()
-    order_item_count = serializers.IntegerField()
+    order_count = serializers.IntegerField()
+    pending_orders = serializers.IntegerField()
     top_products = serializers.ListField(child=serializers.DictField())

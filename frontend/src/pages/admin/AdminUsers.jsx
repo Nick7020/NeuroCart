@@ -6,18 +6,27 @@ import { Spinner } from '../../components/ui/Spinner'
 import { formatDate } from '../../utils'
 import { Search, CheckCircle, Store } from 'lucide-react'
 
-const ROLES = ['customer', 'admin', 'vendor']
 const TABS = ['all', 'vendor', 'customer', 'admin']
 
 export function AdminUsers() {
   const { notify } = useNotification()
-  const { data, loading } = useFetch(() => userService.getAll({ limit: 100 }), [])
+  const { data, loading } = useFetch(() => userService.getAll(), [])
   const [users, setUsers] = useState(null)
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('all')
   const [busy, setBusy] = useState(null)
 
-  const allUsers = users ?? data?.users ?? data ?? []
+  // Backend returns paginated { results: [...] } or flat array
+  const rawUsers = data?.results ?? data?.users ?? data ?? []
+  // Normalise backend field names to what the UI expects
+  const normalise = (u) => ({
+    ...u,
+    name: u.name ?? (`${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email),
+    isBlocked: u.isBlocked ?? !u.is_active,
+    isApproved: u.isApproved ?? u.is_approved,
+    createdAt: u.createdAt ?? u.created_at,
+  })
+  const allUsers = (users ?? rawUsers).map(normalise)
 
   const list = allUsers.filter(u => {
     const matchSearch = u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase())
@@ -31,31 +40,21 @@ export function AdminUsers() {
   }, {})
 
   const toggleBlock = async (u) => {
-    setBusy(u._id)
+    setBusy(u.id)
     try {
-      if (u.isBlocked) await userService.unblock(u._id)
-      else await userService.block(u._id)
-      setUsers(allUsers.map(x => x._id === u._id ? { ...x, isBlocked: !x.isBlocked } : x))
+      if (u.isBlocked) await userService.unblock(u.id)
+      else await userService.block(u.id)
+      setUsers(allUsers.map(x => x.id === u.id ? { ...x, isBlocked: !x.isBlocked, is_active: x.isBlocked } : x))
       notify(u.isBlocked ? 'User unblocked' : 'User blocked', 'success')
     } catch { notify('Action failed', 'error') }
     finally { setBusy(null) }
   }
 
-  const changeRole = async (u, role) => {
-    setBusy(u._id + role)
-    try {
-      await userService.update(u._id, { role })
-      setUsers(allUsers.map(x => x._id === u._id ? { ...x, role } : x))
-      notify('Role updated', 'success')
-    } catch { notify('Update failed', 'error') }
-    finally { setBusy(null) }
-  }
-
   const approveVendor = async (u) => {
-    setBusy(u._id + 'approve')
+    setBusy(u.id + 'approve')
     try {
-      await userService.approve(u._id)
-      setUsers(allUsers.map(x => x._id === u._id ? { ...x, isApproved: true } : x))
+      await userService.approve(u.id)
+      setUsers(allUsers.map(x => x.id === u.id ? { ...x, isApproved: true, is_approved: true } : x))
       notify('Vendor approved', 'success')
     } catch { notify('Approve failed', 'error') }
     finally { setBusy(null) }
@@ -114,13 +113,13 @@ export function AdminUsers() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>{['User', 'Email', tab === 'vendor' ? 'Store' : 'Role', 'Joined', 'Status', 'Actions'].map(h => (
+                <tr>{['User', 'Email', 'Role', 'Joined', 'Status', 'Actions'].map(h => (
                   <th key={h} className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">{h}</th>
                 ))}</tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {list.map(u => (
-                  <tr key={u._id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
@@ -137,14 +136,11 @@ export function AdminUsers() {
                     </td>
                     <td className="px-5 py-4 text-gray-500">{u.email}</td>
                     <td className="px-5 py-4">
-                      {tab === 'vendor' ? (
-                        <span className="text-sm text-gray-700 font-medium">{u.storeName || '—'}</span>
-                      ) : (
-                        <select value={u.role} onChange={e => changeRole(u, e.target.value)} disabled={!!busy}
-                          className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 text-gray-700">
-                          {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
-                      )}
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
+                        u.role === 'vendor' ? 'bg-purple-50 text-purple-600' :
+                        u.role === 'admin' ? 'bg-blue-50 text-blue-600' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>{u.role}</span>
                     </td>
                     <td className="px-5 py-4 text-gray-500">{u.createdAt ? formatDate(u.createdAt) : 'N/A'}</td>
                     <td className="px-5 py-4">
@@ -153,14 +149,14 @@ export function AdminUsers() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      {busy === u._id ? <Spinner size="sm" /> : (
+                      {busy === u.id ? <Spinner size="sm" /> : (
                         <div className="flex gap-2 flex-wrap">
                           <button onClick={() => toggleBlock(u)}
                             className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${u.isBlocked ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}>
                             {u.isBlocked ? 'Unblock' : 'Block'}
                           </button>
                           {u.role === 'vendor' && !u.isApproved && (
-                            <button onClick={() => approveVendor(u)} disabled={busy === u._id + 'approve'}
+                            <button onClick={() => approveVendor(u)} disabled={busy === u.id + 'approve'}
                               className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-1">
                               <CheckCircle size={12} /> Approve
                             </button>
