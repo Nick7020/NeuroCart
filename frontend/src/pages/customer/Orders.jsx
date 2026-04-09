@@ -8,7 +8,8 @@ import { EmptyState } from '../../components/ui/EmptyState'
 
 export function Orders() {
   const { data, loading } = useFetch(() => orderService.myOrders(), [])
-  const orders = data?.results ?? data ?? []
+  const raw = data?.results ?? data
+  const orders = Array.isArray(raw) ? raw : []
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
   if (!orders.length) return (

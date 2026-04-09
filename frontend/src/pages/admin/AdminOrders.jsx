@@ -17,7 +17,8 @@ export function AdminOrders() {
     [statusFilter]
   )
 
-  const orders = data?.results ?? data ?? []
+  const raw = data?.results ?? data
+  const orders = Array.isArray(raw) ? raw : []
 
   const list = orders.filter(o => {
     const matchSearch = o.id?.includes(search) || o.user?.toLowerCase().includes(search.toLowerCase())

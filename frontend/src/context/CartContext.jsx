@@ -35,7 +35,7 @@ export function CartProvider({ children }) {
     setLoading(true)
     try {
       const { data } = await cartService.get()
-      setItems(data.items || [])
+      setItems(Array.isArray(data.items) ? data.items : [])
     } catch {}
     finally { setLoading(false) }
   }
@@ -63,7 +63,7 @@ export function CartProvider({ children }) {
       return
     }
     const { data } = await cartService.add({ product_id: productId, quantity })
-    setItems(data.items)
+    setItems(Array.isArray(data.items) ? data.items : [])
   }
 
   const updateItem = async (itemId, quantity) => {
@@ -73,7 +73,7 @@ export function CartProvider({ children }) {
       return
     }
     const { data } = await cartService.update(itemId, { quantity })
-    setItems(data.items)
+    setItems(Array.isArray(data.items) ? data.items : [])
   }
 
   const removeItem = async (itemId) => {
@@ -82,7 +82,7 @@ export function CartProvider({ children }) {
       return
     }
     const { data } = await cartService.remove(itemId)
-    setItems(data.items)
+    setItems(Array.isArray(data.items) ? data.items : [])
   }
 
   const clearCart = async () => {

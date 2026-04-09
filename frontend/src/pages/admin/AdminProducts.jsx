@@ -19,7 +19,8 @@ export function AdminProducts() {
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
 
-  const list = (products ?? data?.products ?? data ?? []).filter(p =>
+  const raw = products ?? data?.results ?? data?.products ?? data
+  const list = (Array.isArray(raw) ? raw : []).filter(p =>
     p.name?.toLowerCase().includes(search.toLowerCase())
   )
 
