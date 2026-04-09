@@ -50,7 +50,9 @@ export const aiService = {
 
 export const userService = {
   getAll: (params) => api.get('/users', { params }),
+  getCustomers: () => api.get('/users/customers'),
   update: (id, data) => api.put(`/users/${id}`, data),
   block: (id) => api.put(`/users/${id}/block`),
   unblock: (id) => api.put(`/users/${id}/unblock`),
+  approve: (id) => api.put(`/users/${id}/approve`),
 }

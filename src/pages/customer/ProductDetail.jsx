@@ -41,7 +41,7 @@ export function ProductDetail() {
       </button>
 
       <div className="grid md:grid-cols-2 gap-10 mb-12">
-        <ImageCarousel images={product.images} />
+        <ImageCarousel images={product.images} productName={product.name} />
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
           <div>
@@ -53,15 +53,16 @@ export function ProductDetail() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-1">
             <span className="text-4xl font-extrabold text-gray-900">{formatCurrency(product.price)}</span>
             {product.originalPrice > product.price && (
-              <>
+              <div className="flex items-center gap-2">
                 <span className="text-gray-400 line-through text-xl">{formatCurrency(product.originalPrice)}</span>
                 <span className="bg-red-50 text-red-500 text-sm font-bold px-2 py-0.5 rounded-lg">-{product.discount}% OFF</span>
-              </>
+              </div>
             )}
           </div>
+
 
           <p className="text-gray-500 leading-relaxed">{product.description}</p>
 
