@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\migrations\0003_add_shipping_address_to_order.py
+# hypothesis_version: 6.151.12
+
+['0002_initial', 'order', 'orders', 'shipping_address']

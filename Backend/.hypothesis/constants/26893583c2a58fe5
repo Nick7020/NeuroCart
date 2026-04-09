@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\migrations\0004_add_invoice_model.py
+# hypothesis_version: 6.151.12
+
+['0001_initial', 'Invoice', 'id', 'indexes', 'invoice_number', 'invoices', 'issued_at', 'order', 'orders', 'orders.order', 'total_amount', 'vendor', 'vendors']

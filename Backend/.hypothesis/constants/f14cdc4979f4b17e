@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\services\analytics_service.py
+# hypothesis_version: 6.151.12
+
+['%Y-%m-%d', '-order_count', '-total_revenue', '-units_sold', '0.00', 'accepted', 'cancelled', 'customer', 'customers', 'daily_revenue', 'date', 'day', 'delivered', 'id', 'kpis', 'month', 'order', 'orderStatus', 'order_count', 'order_item__order', 'orders', 'period', 'processing', 'product__id', 'product__name', 'product_id', 'product_name', 'products', 'quantity', 'rejected', 'revenue', 'salesTrend', 'shipped', 'shop_name', 'status', 'strftime', 'subtotal', 'top_products', 'total', 'totalVendors', 'total_orders', 'total_revenue', 'units_sold', 'user', 'vendorName', 'vendorOrders', 'vendorRevenue', 'vendorStats', 'vendor__id', 'vendor__shop_name', 'vendor_id', 'week']

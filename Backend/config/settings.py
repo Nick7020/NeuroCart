@@ -181,28 +181,16 @@ SIMPLE_JWT: dict[str, object] = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# Django REST Framework
-<<<<<<< HEAD
 # ---------------------------------------------------------------------------
 # Razorpay
 # ---------------------------------------------------------------------------
-from django.core.exceptions import ImproperlyConfigured
-
 RAZORPAY_MODE       = config('RAZORPAY_MODE', default='test')
 RAZORPAY_KEY_ID     = config('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
 RAZORPAY_WEBHOOK_SECRET = config('RAZORPAY_WEBHOOK_SECRET', default='')
 
-if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
-    raise ImproperlyConfigured(
-        "RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be set in your environment. "
-        "Get them from https://dashboard.razorpay.com/app/keys"
-    )
-
-REST_FRAMEWORK = {
-=======
+# Django REST Framework
 REST_FRAMEWORK: dict[str, object] = {
->>>>>>> ddd228f5d269be9475543dd5a483de8a3f8a2050
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

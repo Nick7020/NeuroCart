@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\models.py
+# hypothesis_version: 6.151.12
+
+['Cancelled', 'Confirmed', 'Delivered', 'Partially Shipped', 'Pending', 'Processing', 'Refunded', 'Shipped', 'cancelled', 'cart', 'confirmed', 'created_at', 'delivered', 'invoices', 'issued_at', 'items', 'order', 'orders', 'partially_shipped', 'pending', 'processing', 'product', 'products.Product', 'refunded', 'shipped', 'status', 'user', 'users.User', 'vendor']

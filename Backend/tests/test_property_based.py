@@ -8,6 +8,21 @@ Tests cover:
   PBT 4 — Review purchase verification (Validates: Requirements 7.1)
   PBT 5 — Vendor order item isolation (Validates: Requirements 5.9)
   PBT 6 — Payment-stock coupling (Validates: Requirements 6.4, 6.5)
+
+  --- NeuroCart System Integration Properties ---
+  Property 3  — CartItem serializer includes id (Validates: Requirements 2.1, 2.4, 2.5)
+  Property 4  — Status values are lowercase end-to-end (Validates: Requirements 3.3, 3.4, 3.7, 10.1, 10.4)
+  Property 5  — Admin analytics overview shape (Validates: Requirements 4.1, 4.2, 4.3, 4.4)
+  Property 6  — Vendor stats shape and counting invariants (Validates: Requirements 4.5, 14.1, 14.2, 14.3)
+  Property 8  — Admin user management state transitions (Validates: Requirements 5.3, 5.4)
+  Property 10 — Shipping address round-trip (Validates: Requirements 6.2, 6.3, 6.5)
+  Property 11 — Invoice auto-creation on processing transition (Validates: Requirements 7.2)
+  Property 13 — Admin orders list shape and filtering (Validates: Requirements 8.2, 8.3)
+  Property 14 — Product primary image field (Validates: Requirements 9.1, 17.3)
+  Property 15 — Order item status transition graph (Validates: Requirements 10.2, 10.3)
+  Property 16 — Chatbot reply for any message (Validates: Requirements 11.2, 11.4)
+  Property 22 — Product image round-trip (Validates: Requirements 17.2, 17.3)
+  Property 23 — Vendor dashboard shape and pending_orders invariant (Validates: Requirements 18.1, 18.2, 18.3)
 """
 import uuid
 from decimal import Decimal

@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\serializers.py
+# hypothesis_version: 6.151.12
+
+['cancelled', 'card', 'cod', 'created_at', 'delivered', 'id', 'item_count', 'items', 'order_item', 'pending', 'processing', 'product', 'quantity', 'shipped', 'shipping_address', 'status', 'subtotal', 'total_amount', 'unit_price', 'updated_at', 'upi', 'user', 'user.email', 'vendor', 'wallet']
