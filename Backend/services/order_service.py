@@ -203,17 +203,14 @@ def create_sales_record(order_item):
     Called when an OrderItem status transitions to delivered.
     Creates a SalesRecord for analytics.
     """
-    try:
-        from analytics_app.models import SalesRecord
-        from django.utils import timezone
+    from analytics_app.models import SalesRecord
+    from django.utils import timezone
 
-        SalesRecord.objects.get_or_create(
-            order_item=order_item,
-            defaults={
-                'vendor': order_item.vendor,
-                'revenue': order_item.subtotal,
-                'date': timezone.now().date(),
-            }
-        )
-    except Exception:
-        pass  # SalesRecord model may not be migrated yet (Task 9)
+    SalesRecord.objects.get_or_create(
+        order_item=order_item,
+        defaults={
+            'vendor': order_item.vendor,
+            'revenue': order_item.subtotal,
+            'date': timezone.now().date(),
+        }
+    )
