@@ -19,7 +19,9 @@ export function Login() {
     try {
       const user = await login({ email, password })
       notify('Login successful!', 'success')
-      navigate(user.role === 'admin' ? '/admin' : user.role === 'vendor' ? '/vendor' : '/')
+      if (user.role === 'admin' || user.role === 'staff') navigate('/admin')
+      else if (user.role === 'vendor') navigate('/admin/vendor-dashboard')
+      else navigate('/')
     } catch (err) {
       notify(err?.response?.data?.message || 'Login failed', 'error')
     } finally { setLoading(false) }

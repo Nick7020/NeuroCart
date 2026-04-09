@@ -5,8 +5,9 @@ import { useNotification } from '../../context/NotificationContext'
 import { useAuth } from '../../context/AuthContext'
 import { Modal } from '../../components/ui/Modal'
 import { Spinner } from '../../components/ui/Spinner'
+import { EmptyState } from '../../components/ui/EmptyState'
 import { formatCurrency } from '../../utils'
-import { Plus, Search, Edit2, Trash2, AlertCircle } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search } from 'lucide-react'
 
 const EMPTY = { name: '', category: '', price: '', stock: '', description: '', images: '' }
 
@@ -36,7 +37,13 @@ export function VendorProducts() {
     e.preventDefault()
     setSaving(true)
     try {
-      const payload = { ...form, price: Number(form.price), stock: Number(form.stock), images: form.images.split(',').map(s => s.trim()).filter(Boolean) }
+      const payload = {
+        ...form,
+        price: Number(form.price),
+        stock: Number(form.stock),
+        images: form.images.split(',').map(s => s.trim()).filter(Boolean),
+        vendorId: user._id,
+      }
       if (editing) {
         const { data: d } = await productService.update(editing._id, payload)
         setProducts(prev => (prev ?? data?.products ?? []).map(p => p._id === editing._id ? (d.product || d) : p))
@@ -44,7 +51,7 @@ export function VendorProducts() {
       } else {
         const { data: d } = await productService.create(payload)
         setProducts(prev => [d.product || d, ...(prev ?? data?.products ?? [])])
-        notify('Product created', 'success')
+        notify('Product added!', 'success')
       }
       setModal(false)
     } catch { notify('Save failed', 'error') }
@@ -63,71 +70,59 @@ export function VendorProducts() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-extrabold text-gray-900">My Products</h1>
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900">My Products</h1>
+          <p className="text-gray-400 text-sm mt-1">Manage your store inventory</p>
+        </div>
         <div className="flex gap-3">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="input pl-9 w-48" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="input pl-9 w-44" />
           </div>
-          <button onClick={openAdd} disabled={!user?.isApproved} className="btn-primary gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <Plus size={16} /> Add Product
-          </button>
+          <button onClick={openAdd} className="btn-primary gap-2"><Plus size={16} /> Add Product</button>
         </div>
       </div>
 
-      {!user?.isApproved && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex items-center gap-3">
-          <AlertCircle size={18} className="text-yellow-500 flex-shrink-0" />
-          <p className="text-sm text-yellow-700 font-medium">Pending admin approval — you cannot add products yet.</p>
+      {loading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> :
+       !list.length ? <EmptyState icon="📦" title="No products yet" description="Add your first product" action={<button onClick={openAdd} className="btn-primary">Add Product</button>} /> : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {list.map(p => (
+            <div key={p._id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+              <div className="aspect-square bg-gray-50 overflow-hidden">
+                <img src={p.images?.[0] || `https://placehold.co/300x300/f0f4ff/1A3263?text=${encodeURIComponent(p.name)}`}
+                  alt={p.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-blue-500 font-semibold mb-1">{p.category}</p>
+                <p className="font-bold text-gray-800 truncate text-sm">{p.name}</p>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="font-extrabold" style={{ color: '#1A3263' }}>{formatCurrency(p.price)}</span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${p.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                    Stock: {p.stock}
+                  </span>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <button onClick={() => openEdit(p)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold transition-colors">
+                    <Edit2 size={13} /> Edit
+                  </button>
+                  <button onClick={() => handleDelete(p._id)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 text-xs font-semibold transition-colors">
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {loading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>{['Product', 'Category', 'Price', 'Stock', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">{h}</th>
-                ))}</tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {list.map(p => (
-                  <tr key={p._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <img src={p.images?.[0] || 'https://placehold.co/40x40/f5f3ff/7c3aed?text=P'} alt="" className="w-10 h-10 rounded-xl object-cover bg-gray-100 border border-gray-100" />
-                        <span className="font-semibold text-gray-800 truncate max-w-[160px]">{p.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-gray-500">{p.category}</td>
-                    <td className="px-5 py-4 font-bold" style={{ color: '#7c3aed' }}>{formatCurrency(p.price)}</td>
-                    <td className="px-5 py-4">
-                      <span className={`badge font-semibold ${p.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>{p.stock}</span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex gap-2">
-                        <button onClick={() => openEdit(p)} className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => handleDelete(p._id)} className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {!list.length && <p className="text-center text-gray-400 py-12">No products found</p>}
-          </div>
-        </div>
-      )}
-
-      <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Product' : 'Add Product'}>
+      <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Product' : 'Add New Product'}>
         <form onSubmit={handleSave} className="space-y-4">
           {[
-            { k: 'name', label: 'Name', placeholder: 'Product name' },
-            { k: 'category', label: 'Category', placeholder: 'Electronics' },
-            { k: 'price', label: 'Price (₹)', placeholder: '999', type: 'number' },
-            { k: 'stock', label: 'Stock', placeholder: '100', type: 'number' },
-            { k: 'images', label: 'Image URLs (comma separated)', placeholder: 'https://...' },
+            { k: 'name',     label: 'Product Name', placeholder: 'e.g. iPhone 15 Pro' },
+            { k: 'category', label: 'Category',     placeholder: 'Electronics' },
+            { k: 'price',    label: 'Price (₹)',    placeholder: '999', type: 'number' },
+            { k: 'stock',    label: 'Stock Qty',    placeholder: '100', type: 'number' },
+            { k: 'images',   label: 'Image URL',    placeholder: 'https://...' },
           ].map(({ k, label, placeholder, type = 'text' }) => (
             <div key={k}>
               <label className="block text-sm font-semibold mb-1.5 text-gray-700">{label}</label>
@@ -140,8 +135,8 @@ export function VendorProducts() {
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setModal(false)} className="btn-secondary flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary flex-1" style={{ background: 'linear-gradient(135deg,#7c3aed,#a78bfa)' }}>
-              {saving ? <Spinner size="sm" /> : (editing ? 'Update' : 'Create')}
+            <button type="submit" disabled={saving} className="btn-primary flex-1">
+              {saving ? <Spinner size="sm" /> : (editing ? 'Update' : 'Add Product')}
             </button>
           </div>
         </form>

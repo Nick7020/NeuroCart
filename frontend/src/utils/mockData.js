@@ -116,33 +116,50 @@ export const MOCK_PRODUCTS = [
 export const MOCK_ORDERS = [
   {
     _id: 'ord001abc123',
-    status: 'DELIVERED',
+    status: 'PENDING',
     createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     totalAmount: 159900,
+    paymentMethod: 'cod',
+    user: { name: 'Rahul Sharma', email: 'rahul@example.com' },
     items: [{ product: MOCK_PRODUCTS[0], quantity: 1, price: 159900 }],
-    address: { name: 'Demo User', phone: '9876543210', street: '123 MG Road', city: 'Bangalore', state: 'Karnataka', pincode: '560001' }
+    address: { name: 'Rahul Sharma', phone: '9876543210', street: '123 MG Road', city: 'Bangalore', state: 'Karnataka', pincode: '560001' }
   },
   {
     _id: 'ord002xyz456',
-    status: 'SHIPPED',
+    status: 'PENDING',
     createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     totalAmount: 24990,
+    paymentMethod: 'upi',
+    user: { name: 'Priya Patel', email: 'priya@example.com' },
     items: [{ product: MOCK_PRODUCTS[2], quantity: 1, price: 24990 }],
-    address: { name: 'Demo User', phone: '9876543210', street: '456 FC Road', city: 'Pune', state: 'Maharashtra', pincode: '411001' }
+    address: { name: 'Priya Patel', phone: '9876543210', street: '456 FC Road', city: 'Pune', state: 'Maharashtra', pincode: '411001' }
   },
   {
     _id: 'ord003pqr789',
-    status: 'PROCESSING',
+    status: 'PENDING',
     createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     updatedAt: new Date().toISOString(),
     totalAmount: 12294,
+    paymentMethod: 'card',
+    user: { name: 'Amit Kumar', email: 'amit@example.com' },
     items: [
       { product: MOCK_PRODUCTS[5], quantity: 1, price: 10795 },
       { product: MOCK_PRODUCTS[15], quantity: 1, price: 1499 }
     ],
-    address: { name: 'Demo User', phone: '9876543210', street: '789 Linking Road', city: 'Mumbai', state: 'Maharashtra', pincode: '400050' }
+    address: { name: 'Amit Kumar', phone: '9876543210', street: '789 Linking Road', city: 'Mumbai', state: 'Maharashtra', pincode: '400050' }
+  },
+  {
+    _id: 'ord004mno321',
+    status: 'PENDING',
+    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    updatedAt: new Date().toISOString(),
+    totalAmount: 8499,
+    paymentMethod: 'cod',
+    user: { name: 'Sneha Reddy', email: 'sneha@example.com' },
+    items: [{ product: MOCK_PRODUCTS[12], quantity: 1, price: 7499 }],
+    address: { name: 'Sneha Reddy', phone: '9123456780', street: '12 Park Street', city: 'Hyderabad', state: 'Telangana', pincode: '500001' }
   },
 ]
 

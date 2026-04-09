@@ -23,11 +23,10 @@ import { AdminProducts } from './pages/admin/AdminProducts'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminReports } from './pages/admin/AdminReports'
-
-import { VendorLayout } from './layouts/VendorLayout'
+import { VendorOrders } from './pages/admin/VendorOrders'
+import { AdminInvoices } from './pages/admin/AdminInvoices'
 import { VendorDashboard } from './pages/vendor/VendorDashboard'
 import { VendorProducts } from './pages/vendor/VendorProducts'
-import { VendorOrders } from './pages/vendor/VendorOrders'
 import { VendorCustomers } from './pages/vendor/VendorCustomers'
 
 export default function App() {
@@ -47,22 +46,22 @@ export default function App() {
                 <Route path="/products" element={<Home />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={
-                  <ProtectedRoute roles={['customer', 'admin', 'vendor']}>
+                  <ProtectedRoute roles={['customer', 'admin', 'staff']}>
                     <Cart />
                   </ProtectedRoute>
                 } />
                 <Route path="/checkout" element={
-                  <ProtectedRoute roles={['customer', 'vendor']}>
+                  <ProtectedRoute roles={['customer']}>
                     <Checkout />
                   </ProtectedRoute>
                 } />
                 <Route path="/orders" element={
-                  <ProtectedRoute roles={['customer', 'vendor']}>
+                  <ProtectedRoute roles={['customer']}>
                     <Orders />
                   </ProtectedRoute>
                 } />
                 <Route path="/orders/:id" element={
-                  <ProtectedRoute roles={['customer', 'admin', 'vendor']}>
+                  <ProtectedRoute roles={['customer', 'admin', 'staff']}>
                     <OrderTracking />
                   </ProtectedRoute>
                 } />
@@ -73,21 +72,9 @@ export default function App() {
                 } />
               </Route>
 
-              {/* Vendor */}
-              <Route path="/vendor" element={
-                <ProtectedRoute roles={['vendor']}>
-                  <VendorLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<VendorDashboard />} />
-                <Route path="products" element={<VendorProducts />} />
-                <Route path="orders" element={<VendorOrders />} />
-                <Route path="customers" element={<VendorCustomers />} />
-              </Route>
-
-              {/* Admin */}
+              {/* Admin + Vendor */}
               <Route path="/admin" element={
-                <ProtectedRoute roles={['admin']}>
+                <ProtectedRoute roles={['admin', 'staff', 'vendor']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }>
@@ -100,6 +87,11 @@ export default function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="reports" element={<AdminReports />} />
+                <Route path="vendor-orders" element={<VendorOrders />} />
+                <Route path="vendor-dashboard" element={<VendorDashboard />} />
+                <Route path="vendor-products" element={<VendorProducts />} />
+                <Route path="vendor-customers" element={<VendorCustomers />} />
+                <Route path="invoices" element={<AdminInvoices />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
