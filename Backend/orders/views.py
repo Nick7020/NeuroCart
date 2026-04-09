@@ -61,7 +61,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         items_qs = OrderItem.objects.select_related('product', 'vendor')
-        return Order.objects.select_related('user', 'payment').prefetch_related(
+        return Order.objects.select_related('user').prefetch_related(
             Prefetch('items', queryset=items_qs)
         )
 
@@ -119,7 +119,7 @@ class VendorOrderItemStatusView(APIView):
 
     def patch(self, request, item_id):
         vendor = request.user.vendor_profile
-        order_item = get_object_or_404(OrderItem, pk=item_id)
+        order_item = get_object_or_404(OrderItem, pk=item_id, vendor=vendor)
 
         serializer = OrderItemStatusUpdateSerializer(
             data=request.data,

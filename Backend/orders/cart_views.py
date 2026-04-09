@@ -18,9 +18,10 @@ class CartDetailView(APIView):
     permission_classes = [IsAuthenticated, IsCustomer]
 
     def get(self, request):
-        cart, _ = Cart.objects.prefetch_related(
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart = Cart.objects.prefetch_related(
             Prefetch('items', queryset=CartItem.objects.select_related('product'))
-        ).get_or_create(user=request.user)
+        ).get(pk=cart.pk)
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
@@ -44,8 +45,14 @@ class CartItemAddView(APIView):
         )
 
         if not created:
-            cart_item.quantity += quantity
-            cart_item.save()
+            new_qty = cart_item.quantity + quantity
+            if new_qty > product.stock:
+                return Response(
+                    {'detail': f'Only {product.stock} units available.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            cart_item.quantity = new_qty
+            cart_item.save(update_fields=['quantity'])
 
         cart.refresh_from_db()
         return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
@@ -69,7 +76,7 @@ class CartItemUpdateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         cart_item.quantity = serializer.validated_data['quantity']
-        cart_item.save()
+        cart_item.save(update_fields=['quantity'])
 
         cart = cart_item.cart
         return Response(CartSerializer(cart).data)

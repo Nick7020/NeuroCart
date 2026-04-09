@@ -28,6 +28,11 @@ class CartSerializer(serializers.ModelSerializer):
     def get_total(self, obj):
         return sum(item.product.price * item.quantity for item in obj.items.all())
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['total'] = str(data['total'])
+        return data
+
 
 class AddCartItemSerializer(serializers.Serializer):
     product_id = serializers.UUIDField()

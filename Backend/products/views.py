@@ -193,11 +193,6 @@ class ReviewCreateView(generics.CreateAPIView):
     serializer_class = ReviewCreateSerializer
     permission_classes = [IsAuthenticated, IsCustomer]
 
-    def get_serializer_context(self):
-        ctx = super().get_serializer_context()
-        ctx['product'] = self._get_product()
-        return ctx
-
     def _get_product(self):
         try:
             return Product.objects.get(pk=self.kwargs['pk'])
@@ -205,8 +200,17 @@ class ReviewCreateView(generics.CreateAPIView):
             from rest_framework.exceptions import NotFound
             raise NotFound('Product not found.')
 
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        if not hasattr(self, '_product'):
+            self._product = self._get_product()
+        ctx['product'] = self._product
+        return ctx
+
     def perform_create(self, serializer):
-        product = self._get_product()
+        if not hasattr(self, '_product'):
+            self._product = self._get_product()
+        product = self._product
         if Review.objects.filter(user=self.request.user, product=product).exists():
             from rest_framework.exceptions import ValidationError
             raise ValidationError('You have already reviewed this product.')
