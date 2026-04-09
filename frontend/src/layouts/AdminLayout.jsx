@@ -6,7 +6,6 @@ import logo from '../assets/logo.png'
 
 const ADMIN_LINKS = [
   { to: '/admin',               label: 'Dashboard',     icon: <LayoutDashboard size={18} /> },
-  { to: '/admin/products',      label: 'Products',      icon: <Package size={18} /> },
   { to: '/admin/orders',        label: 'Orders',        icon: <ShoppingBag size={18} /> },
   { to: '/admin/vendor-orders', label: 'Vendor Orders', icon: <ClipboardList size={18} /> },
   { to: '/admin/invoices',      label: 'Invoices',      icon: <FileText size={18} /> },
@@ -15,11 +14,10 @@ const ADMIN_LINKS = [
 ]
 
 const VENDOR_LINKS = [
-  { to: '/admin/vendor-dashboard', label: 'Dashboard',  icon: <LayoutDashboard size={18} /> },
-  { to: '/admin/vendor-orders',    label: 'Orders',     icon: <ClipboardList size={18} /> },
-  { to: '/admin/vendor-products',  label: 'My Products',icon: <Package size={18} /> },
-  { to: '/admin/vendor-customers', label: 'Customers',  icon: <Users size={18} /> },
-  { to: '/admin/invoices',         label: 'Invoices',   icon: <FileText size={18} /> },
+  { to: '/admin/vendor-dashboard', label: 'Dashboard',   icon: <LayoutDashboard size={18} /> },
+  { to: '/admin/vendor-orders',    label: 'Orders',      icon: <ClipboardList size={18} /> },
+  { to: '/admin/vendor-products',  label: 'My Products', icon: <Package size={18} /> },
+  { to: '/admin/invoices',         label: 'Invoices',    icon: <FileText size={18} /> },
 ]
 
 export function AdminLayout() {

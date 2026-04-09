@@ -91,7 +91,27 @@ function mockHandler(config) {
   if (url.includes('/orders')) return { orders: MOCK_ORDERS }
 
   // ── Analytics ─────────────────────────────────────────────────────────────
-  if (url.includes('/analytics/dashboard')) return MOCK_ANALYTICS
+  if (url.includes('/analytics/dashboard')) {
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]')
+    const vendorRevenue = invoices.reduce((s, inv) => {
+      const items = inv.order?.items || []
+      return s + items.reduce((a, i) => a + i.price * i.quantity, 0) * 1.18
+    }, 0)
+    const vendorOrders = MOCK_ORDERS
+    const vendorStats = [
+      { vendorName: 'Meera Electronics', orders: 12, revenue: 284750, accepted: 10, rejected: 2 },
+      { vendorName: 'TechZone Store',    orders: 8,  revenue: 156200, accepted: 7,  rejected: 1 },
+      { vendorName: 'Fashion Hub',       orders: 15, revenue: 98500,  accepted: 13, rejected: 2 },
+      { vendorName: 'BookWorld',         orders: 6,  revenue: 12400,  accepted: 6,  rejected: 0 },
+    ]
+    return {
+      ...MOCK_ANALYTICS,
+      vendorStats,
+      vendorRevenue: vendorRevenue || vendorStats.reduce((s, v) => s + v.revenue, 0),
+      vendorOrders: vendorOrders.length,
+      totalVendors: vendorStats.length,
+    }
+  }
   if (url.includes('/analytics/reports')) return MOCK_REPORTS
   if (url.includes('/analytics/sales')) return { sales: MOCK_ANALYTICS.salesTrend }
 
