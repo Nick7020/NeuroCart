@@ -6,16 +6,22 @@ from orders.urls import vendor_order_urlpatterns
 
 
 def test_api(request):
-    return JsonResponse({"message": "NeuroCart API Running 🚀"})
+    return JsonResponse({"message": "NeuroCart API Running"})
+
+
+def root_view(request):
+    return JsonResponse({"message": "NeuroCart Backend", "status": "running", "version": "1.0"})
 
 
 urlpatterns = [
+    path('', root_view),
     path('admin/', admin.site.urls),
     path('api/test/', test_api),
 
     # Auth & Users
     path('api/auth/', include('users.urls')),
     path('api/users/', include('users.profile_urls')),
+    path('api/admin/users/', include('users.admin_urls')),
 
     # Vendors
     path('api/vendors/', include('vendors.urls')),

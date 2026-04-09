@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react'
 
-const NotificationContext = createContext(null)
+export const NotificationContext = createContext(null)
 
 const STYLES = {
   success: { bg: '#f0fdf4', border: '#86efac', text: '#15803d', icon: <CheckCircle size={16} /> },

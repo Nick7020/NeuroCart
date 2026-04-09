@@ -1,32 +1,34 @@
 import { useState } from 'react'
 import { useFetch } from '../../hooks/useFetch'
 import { vendorService } from '../../services'
-import { OrderCard } from '../../components/order/OrderCard'
+import { VendorOrderItemCard } from '../../components/order/VendorOrderItemCard'
 import { Spinner } from '../../components/ui/Spinner'
 import { EmptyState } from '../../components/ui/EmptyState'
 
-const FILTERS = ['ALL', 'PENDING', 'CONFIRMED', 'CANCELLED']
+const FILTERS = ['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']
 
 export function VendorOrders() {
   const { data, loading } = useFetch(() => vendorService.getOrders(), [])
-  const [orders, setOrders] = useState(null)
+  const [orderItems, setOrderItems] = useState(null)
   const [filter, setFilter] = useState('ALL')
 
-  const allOrders = orders ?? data?.results ?? data ?? []
-  const filtered = filter === 'ALL' ? allOrders : allOrders.filter(o => o.status?.toUpperCase() === filter)
+  const allOrderItems = orderItems ?? data?.results ?? data ?? []
+  const filtered = filter === 'ALL' ? allOrderItems : allOrderItems.filter(item => item.status?.toUpperCase() === filter)
 
   const handleUpdate = (id, status) => {
-    setOrders(prev => (prev ?? allOrders).map(o => (o.id || o._id) === id ? { ...o, status } : o))
+    setOrderItems(prev => (prev ?? allOrderItems).map(item => (item.id || item._id) === id ? { ...item, status } : item))
   }
 
   const counts = FILTERS.reduce((acc, f) => {
-    acc[f] = f === 'ALL' ? allOrders.length : allOrders.filter(o => o.status === f).length
+    acc[f] = f === 'ALL' ? allOrderItems.length : allOrderItems.filter(item => item.status?.toUpperCase() === f).length
     return acc
   }, {})
 
   const FILTER_STYLES = {
     PENDING:   { bg: '#fffbeb', color: '#d97706' },
-    CONFIRMED: { bg: '#f0fdf4', color: '#16a34a' },
+    PROCESSING: { bg: '#fef3c7', color: '#d97706' },
+    SHIPPED:   { bg: '#dbeafe', color: '#2563eb' },
+    DELIVERED: { bg: '#f0fdf4', color: '#16a34a' },
     CANCELLED: { bg: '#fef2f2', color: '#dc2626' },
     ALL:       { bg: '#eff6ff', color: '#2563eb' },
   }
@@ -63,8 +65,8 @@ export function VendorOrders() {
         <EmptyState icon="📦" title="No orders found" description="No orders in this category yet" />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(order => (
-            <OrderCard key={order.id || order._id} order={order} onUpdate={handleUpdate} />
+          {filtered.map(orderItem => (
+            <VendorOrderItemCard key={orderItem.id || orderItem._id} orderItem={orderItem} onUpdate={handleUpdate} />
           ))}
         </div>
       )}

@@ -1,16 +1,16 @@
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle
-from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
 
-from .models import User
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
 from .permissions import IsAdmin
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, AdminUserSerializer
+from .models import User
 
 
 class RegisterView(APIView):
@@ -101,68 +101,81 @@ class UserProfileView(APIView):
 
 
 class AdminUserListView(APIView):
-    permission_classes = [IsAdmin]
+    """Admin endpoint to list all users with filtering."""
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
-        paginator = PageNumberPagination()
-        paginator.page_size = 20
-        users = User.objects.all().order_by('-created_at')
-        page = paginator.paginate_queryset(users, request)
-        serializer = AdminUserSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        role = request.query_params.get('role')
+        is_active = request.query_params.get('is_active')
+        
+        queryset = User.objects.all()
+        
+        if role:
+            queryset = queryset.filter(role=role)
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+        
+        users = UserProfileSerializer(queryset, many=True).data
+        return Response({
+            'users': users,
+            'count': queryset.count()
+        })
+
+
+class AdminUserDetailView(APIView):
+    """Admin endpoint to get, update, or delete a specific user."""
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_user(self, user_id):
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
+
+    def get(self, request, user_id):
+        user = self.get_user(user_id)
+        if not user:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(UserProfileSerializer(user).data)
+
+    def put(self, request, user_id):
+        user = self.get_user(user_id)
+        if not user:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, user_id):
+        user = self.get_user(user_id)
+        if not user:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AdminUserBlockView(APIView):
-    permission_classes = [IsAdmin]
+    """Admin endpoint to block or unblock a user."""
+    permission_classes = [IsAuthenticated, IsAdmin]
 
-    def post(self, request, pk):
+    def post(self, request, user_id):
         try:
-            user = User.objects.get(pk=pk)
+            user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if user.role == 'admin':
-            return Response(
-                {'error': 'CANNOT_BLOCK_ADMIN', 'message': 'Cannot block an admin user.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        user.is_active = False
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        action = request.data.get('action', 'block')
+        if action == 'block':
+            user.is_active = False
+        elif action == 'unblock':
+            user.is_active = True
+        else:
+            return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+        
         user.save()
-        return Response(AdminUserSerializer(user).data)
-
-
-class AdminUserUnblockView(APIView):
-    permission_classes = [IsAdmin]
-
-    def post(self, request, pk):
-        try:
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-        user.is_active = True
-        user.save()
-        return Response(AdminUserSerializer(user).data)
-
-
-class AdminUserApproveView(APIView):
-    permission_classes = [IsAdmin]
-
-    def post(self, request, pk):
-        try:
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if user.role != 'vendor':
-            return Response(
-                {'error': 'NOT_A_VENDOR', 'message': 'User is not a vendor.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        try:
-            vendor_profile = user.vendor_profile
-        except Exception:
-            return Response(
-                {'error': 'NOT_A_VENDOR', 'message': 'User is not a vendor.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        vendor_profile.verification_status = 'approved'
-        vendor_profile.save()
-        return Response(AdminUserSerializer(user).data)
+        return Response({
+            'message': f'User {action}ed successfully',
+            'user': UserProfileSerializer(user).data
+        })

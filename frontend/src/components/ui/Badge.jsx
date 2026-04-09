@@ -8,7 +8,7 @@ const STATUS_STYLES = {
 }
 
 export function Badge({ status }) {
-  const s = STATUS_STYLES[status] || { bg: '#f3f4f6', color: '#6b7280' }
+  const s = STATUS_STYLES[status?.toUpperCase()] || { bg: '#f3f4f6', color: '#6b7280' }
   return (
     <span className="badge font-semibold" style={{ background: s.bg, color: s.color }}>
       {status}

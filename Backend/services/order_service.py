@@ -156,9 +156,14 @@ def update_order_item_status(order_item, vendor, new_status):
     """
     Validate vendor ownership and status transition, update item status,
     re-aggregate and save order status.
+    Generates invoice when vendor accepts order (pending -> processing).
     Returns the updated OrderItem.
     Raises PermissionDenied or ValidationError on invalid input.
     """
+    from orders.models import Invoice
+    from django.utils import timezone
+    from datetime import timedelta
+
     VALID_TRANSITIONS = {
         'pending':    {'processing', 'cancelled'},
         'processing': {'shipped', 'cancelled'},
@@ -177,6 +182,27 @@ def update_order_item_status(order_item, vendor, new_status):
         )
 
     with transaction.atomic():
+        # Generate invoice when vendor accepts order
+        if order_item.status == 'pending' and new_status == 'processing':
+            # Calculate tax (example: 18% GST)
+            tax_rate = 0.18
+            tax_amount = order_item.subtotal * tax_rate
+            total_amount = order_item.subtotal + tax_amount
+
+            # Create invoice
+            Invoice.objects.create(
+                order_item=order_item,
+                vendor=vendor,
+                customer=order_item.order.user,
+                product=order_item.product,
+                quantity=order_item.quantity,
+                unit_price=order_item.unit_price,
+                subtotal=order_item.subtotal,
+                tax_amount=tax_amount,
+                total_amount=total_amount,
+                due_date=timezone.now().date() + timedelta(days=30),  # 30 days payment term
+            )
+
         order_item.status = new_status
         order_item.save(update_fields=['status'])
 

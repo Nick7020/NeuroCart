@@ -12,18 +12,18 @@ export function Profile() {
   const { user } = useAuth()
   const [tab, setTab] = useState('orders')
   const { data, loading } = useFetch(() => orderService.myOrders(), [])
-  const orders = data?.orders || data || []
+  const orders = data?.results ?? data?.orders ?? data ?? []
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6 flex items-center gap-5 shadow-sm">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-extrabold text-white shadow-md" style={{ background: 'linear-gradient(135deg,#1A3263,#547792)' }}>
-          {user?.name?.[0]?.toUpperCase()}
+          {(user?.name || user?.email || 'U')?.[0]?.toUpperCase()}
         </div>
         <div>
-          <h1 className="text-xl font-extrabold text-gray-900">{user?.name}</h1>
-          <p className="text-gray-400 text-sm">{user?.email}</p>
-          <span className="badge bg-blue-50 text-blue-600 mt-1 capitalize">{user?.role}</span>
+          <h1 className="text-xl font-extrabold text-gray-900">{user?.name || user?.email || 'User'}</h1>
+          <p className="text-gray-400 text-sm">{user?.email || '—'}</p>
+          <span className="badge bg-blue-50 text-blue-600 mt-1 capitalize">{user?.role || 'customer'}</span>
         </div>
       </div>
 
@@ -41,20 +41,24 @@ export function Profile() {
         loading ? <div className="flex justify-center py-10"><Spinner /></div> :
         !orders.length ? <EmptyState icon="📦" title="No orders yet" action={<Link to="/" className="btn-primary">Shop Now</Link>} /> :
         <div className="space-y-4">
-          {orders.map(order => (
-            <Link key={order._id} to={`/orders/${order._id}`}
-              className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all block">
-              <div>
-                <p className="font-bold text-gray-800">Order #{order._id?.slice(-8).toUpperCase()}</p>
-                <p className="text-sm text-gray-400 mt-0.5">{formatDate(order.createdAt)} · {order.items?.length} item(s)</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <Badge status={order.status} />
-                <span className="font-extrabold" style={{ color: '#1A3263' }}>{formatCurrency(order.totalAmount)}</span>
-                <span className="text-gray-400 text-sm">View →</span>
-              </div>
-            </Link>
-          ))}
+          {orders.map(order => {
+            const orderId = (order.id || order._id)?.toString() || ''
+            const itemCount = order.item_count || order.items?.length || 0
+            return (
+              <Link key={orderId} to={`/orders/${orderId}`}
+                className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all block">
+                <div>
+                  <p className="font-bold text-gray-800">Order #{orderId.slice(-8).toUpperCase()}</p>
+                  <p className="text-sm text-gray-400 mt-0.5">{formatDate(order.created_at || order.createdAt)} · {itemCount} item(s)</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Badge status={order.status} />
+                  <span className="font-extrabold" style={{ color: '#1A3263' }}>{formatCurrency(order.total_amount || order.totalAmount || 0)}</span>
+                  <span className="text-gray-400 text-sm">View →</span>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       )}
 

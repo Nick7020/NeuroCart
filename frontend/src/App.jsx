@@ -1,14 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
-import { NotificationProvider, useNotification } from './context/NotificationContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { ProtectedRoute } from './components/ui/ProtectedRoute'
-import { setNotify } from './services/api'
 
 import { CustomerLayout } from './layouts/CustomerLayout'
 import { AdminLayout } from './layouts/AdminLayout'
-import { VendorLayout } from './layouts/VendorLayout'
 
 import { Login } from './pages/auth/Login'
 import { Register } from './pages/auth/Register'
@@ -26,27 +23,18 @@ import { AdminProducts } from './pages/admin/AdminProducts'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminReports } from './pages/admin/AdminReports'
-import { VendorOrders as AdminVendorOrders } from './pages/admin/VendorOrders'
+import { VendorOrders } from './pages/admin/VendorOrders'
 import { AdminInvoices } from './pages/admin/AdminInvoices'
 import { VendorDashboard } from './pages/vendor/VendorDashboard'
 import { VendorProducts } from './pages/vendor/VendorProducts'
-import { VendorOrders } from './pages/vendor/VendorOrders'
 import { VendorCustomers } from './pages/vendor/VendorCustomers'
-
-// Wires the NotificationContext notify function into the api.js interceptor
-// without creating a circular import (api.js doesn't import React context directly)
-function NotifyBridge() {
-  const { notify } = useNotification()
-  useEffect(() => { setNotify(notify) }, [notify])
-  return null
-}
+import { VendorInvoices } from './pages/vendor/VendorInvoices'
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
-          <NotifyBridge />
           <CartProvider>
             <Routes>
               {/* Auth */}
@@ -85,9 +73,9 @@ export default function App() {
                 } />
               </Route>
 
-              {/* Admin */}
+              {/* Admin + Vendor */}
               <Route path="/admin" element={
-                <ProtectedRoute roles={['admin', 'staff']}>
+                <ProtectedRoute roles={['admin', 'staff', 'vendor']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }>
@@ -100,20 +88,12 @@ export default function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="reports" element={<AdminReports />} />
-                <Route path="vendor-orders" element={<AdminVendorOrders />} />
+                <Route path="vendor-orders" element={<VendorOrders />} />
+                <Route path="vendor-dashboard" element={<VendorDashboard />} />
+                <Route path="vendor-products" element={<VendorProducts />} />
+                <Route path="vendor-customers" element={<VendorCustomers />} />
+                <Route path="vendor-invoices" element={<VendorInvoices />} />
                 <Route path="invoices" element={<AdminInvoices />} />
-              </Route>
-
-              {/* Vendor */}
-              <Route path="/vendor" element={
-                <ProtectedRoute roles={['vendor']}>
-                  <VendorLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<VendorDashboard />} />
-                <Route path="products" element={<VendorProducts />} />
-                <Route path="orders" element={<VendorOrders />} />
-                <Route path="customers" element={<VendorCustomers />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

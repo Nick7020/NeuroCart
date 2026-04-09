@@ -106,7 +106,7 @@ export function OrderCard({ order, onUpdate }) {
 
         {/* Actions */}
         <div className="flex gap-2 mt-2">
-          {order.status === 'PENDING' && (
+          {order.status?.toUpperCase() === 'PENDING' && (
             <>
               <motion.button
                 whileTap={{ scale: 0.97 }}
@@ -134,7 +134,7 @@ export function OrderCard({ order, onUpdate }) {
               </motion.button>
             </>
           )}
-          {order.status === 'CONFIRMED' && (
+          {order.status?.toUpperCase() === 'CONFIRMED' && (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => setInvoice({ orderId: 'VLO' + orderId, order, createdAt: order.created_at || order.createdAt })}
@@ -144,7 +144,7 @@ export function OrderCard({ order, onUpdate }) {
               <FileText size={16} /> View Invoice
             </motion.button>
           )}
-          {order.status === 'CANCELLED' && (
+          {order.status?.toUpperCase() === 'CANCELLED' && (
             <div className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-red-50 text-red-500 border border-red-100">
               <XCircle size={15} /> Order Rejected
             </div>

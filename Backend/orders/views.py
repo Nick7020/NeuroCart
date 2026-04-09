@@ -13,9 +13,8 @@ from .serializers import (
     OrderDetailSerializer,
     OrderItemSerializer,
     OrderItemStatusUpdateSerializer,
-    AdminOrderListSerializer,
+    InvoiceSerializer,
 )
-from .invoice_serializers import InvoiceSerializer
 from services import order_service
 from users.permissions import IsCustomer, IsApprovedVendor, IsAdmin, IsOrderOwner
 
@@ -32,7 +31,6 @@ class CheckoutView(APIView):
             order = order_service.checkout(
                 user=request.user,
                 payment_method=serializer.validated_data['payment_method'],
-                shipping_address=serializer.validated_data.get('shipping_address'),
             )
         except ValidationError as e:
             return Response(
@@ -97,6 +95,20 @@ class OrderCancelView(APIView):
         return Response(OrderDetailSerializer(order).data)
 
 
+class OrderListView(generics.ListAPIView):
+    """GET /api/orders — customer's own orders, paginated."""
+    serializer_class = OrderListSerializer
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get_queryset(self):
+        return (
+            Order.objects
+            .filter(user=self.request.user)
+            .annotate(item_count=Count('items'))
+            .order_by('-created_at')
+        )
+
+
 class VendorOrderItemListView(generics.ListAPIView):
     """GET /api/vendor/orders — vendor's order items, filterable by status."""
     serializer_class = OrderItemSerializer
@@ -147,60 +159,38 @@ class VendorOrderItemStatusView(APIView):
         return Response(OrderItemSerializer(order_item).data)
 
 
-class AdminOrderListView(generics.ListAPIView):
-    """GET /api/admin/orders/ — admin-only, paginated list of all orders."""
-    serializer_class = AdminOrderListSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get_queryset(self):
-        qs = (
-            Order.objects
-            .select_related('user')
-            .annotate(item_count=Count('items'))
-            .order_by('-created_at')
-        )
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            qs = qs.filter(status=status_filter)
-        return qs
-
-
 class InvoiceListView(generics.ListAPIView):
-    """GET /api/invoices/ — admin-only, paginated list of all invoices."""
+    """GET /api/invoices — admin view of all invoices."""
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get_queryset(self):
-        return (
-            Invoice.objects
-            .select_related('order', 'vendor')
-            .prefetch_related('order__items__product', 'order__items__vendor')
-            .order_by('-issued_at')
-        )
+        return Invoice.objects.select_related(
+            'order_item', 'vendor', 'customer', 'product'
+        ).order_by('-generated_at')
+
+
+class VendorInvoiceListView(generics.ListAPIView):
+    """GET /api/vendor/invoices — vendor's own invoices."""
+    serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated, IsApprovedVendor]
+
+    def get_queryset(self):
+        vendor = self.request.user.vendor_profile
+        return Invoice.objects.filter(vendor=vendor).select_related(
+            'order_item', 'customer', 'product'
+        ).order_by('-generated_at')
 
 
 class InvoiceDetailView(generics.RetrieveAPIView):
-    """GET /api/invoices/{pk}/ — admin or the owning vendor."""
+    """GET /api/invoices/{id} — admin or vendor (own invoice)."""
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Invoice.objects.select_related('order', 'vendor').prefetch_related(
-            'order__items__product', 'order__items__vendor'
-        )
-
-    def get_object(self):
-        invoice = get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
         user = self.request.user
         if user.role == 'admin':
-            return invoice
-        # Approved vendors can only see their own invoices
-        if user.role == 'vendor':
-            try:
-                vendor_profile = user.vendor_profile
-                if invoice.vendor_id == vendor_profile.id:
-                    return invoice
-            except Exception:
-                pass
-        from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
-        raise DRFPermissionDenied("You do not have permission to view this invoice.")
+            return Invoice.objects.all()
+        elif hasattr(user, 'vendor_profile'):
+            return Invoice.objects.filter(vendor=user.vendor_profile)
+        return Invoice.objects.none()
