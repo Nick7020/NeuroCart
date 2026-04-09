@@ -39,8 +39,6 @@ export const orderService = {
 export const paymentService = {
   initiate: (data) => api.post('/payments/process/', data),
   getByOrder: (orderId) => api.get(`/payments/${orderId}/`),
-  createRazorpayOrder: (orderId) => api.post('/payments/razorpay/create-order/', { order_id: orderId }),
-  verifyRazorpayPayment: (data) => api.post('/payments/razorpay/verify/', data),
 }
 
 export const analyticsService = {
@@ -53,16 +51,20 @@ export const analyticsService = {
 export const userService = {
   me: () => api.get('/users/me'),
   update: (data) => api.put('/users/me', data),
-  getAll: () => api.get('/users/'),
-  block: (id) => api.post(`/users/${id}/block/`),
-  unblock: (id) => api.post(`/users/${id}/unblock/`),
-  approve: (id) => api.post(`/users/${id}/approve/`),
+  getAll: (params) => api.get('/admin/users/users/', { params }),
+  getById: (id) => api.get(`/admin/users/users/${id}/`),
+  block: (id) => api.post(`/admin/users/users/${id}/block/`, { action: 'block' }),
+  unblock: (id) => api.post(`/admin/users/users/${id}/block/`, { action: 'unblock' }),
+  updateUser: (id, data) => api.put(`/admin/users/users/${id}/`, data),
+  deleteUser: (id) => api.delete(`/admin/users/users/${id}/`),
+  getCustomers: () => api.get('/admin/users/users/', { params: { role: 'customer' } }),
 }
 
 export const vendorService = {
   register: (data) => api.post('/vendors/register', data),
   dashboard: () => api.get('/vendor/dashboard'),
   getOrders: () => api.get('/vendor/orders/'),
+  updateOrderStatus: (id, status) => api.patch(`/vendor/orders/${id}/status/`, { new_status: status }),
   acceptOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'processing' }),
   rejectOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'cancelled' }),
   analytics: () => api.get('/vendor/analytics'),
@@ -77,7 +79,6 @@ export const categoryService = {
 export const adminService = {
   getVendors: () => api.get('/admin/vendors'),
   verifyVendor: (id) => api.patch(`/admin/vendors/${id}/verify`),
-  getOrders: (params) => api.get('/admin/orders/', { params }),
 }
 
 // No backend implementation yet — frontend/mock only
@@ -87,6 +88,7 @@ export const aiService = {
 }
 
 export const invoiceService = {
-  getAll: () => api.get('/invoices/'),
-  getById: (id) => api.get(`/invoices/${id}/`),
+  getAll: () => api.get('/invoices'),
+  getById: (id) => api.get(`/invoices/${id}`),
+  vendorGetAll: () => api.get('/vendor/invoices'),
 }

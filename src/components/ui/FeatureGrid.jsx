@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useInView } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { Sparkles, ShieldCheck, Shirt, Layers, Monitor, Watch } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

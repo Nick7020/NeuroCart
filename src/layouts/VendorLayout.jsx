@@ -1,13 +1,14 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
-import { LayoutDashboard, Package, ShoppingBag, Users, Home, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Users, Home, LogOut, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 import logo from '../assets/logo.png'
 
 const LINKS = [
   { to: '/vendor',           label: 'Dashboard',  icon: <LayoutDashboard size={18} /> },
   { to: '/vendor/products',  label: 'My Products', icon: <Package size={18} /> },
   { to: '/vendor/orders',    label: 'My Orders',   icon: <ShoppingBag size={18} /> },
+  { to: '/vendor/invoices',  label: 'Invoices',    icon: <FileText size={18} /> },
   { to: '/vendor/customers', label: 'Customers',   icon: <Users size={18} /> },
 ]
 
