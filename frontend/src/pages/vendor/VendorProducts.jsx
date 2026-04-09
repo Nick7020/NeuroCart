@@ -35,10 +35,13 @@ export function VendorProducts() {
   const [search, setSearch]   = useState('')
 
   useEffect(() => {
-    if (data) setProducts(data.results ?? data)
+    if (data) {
+      const raw = data.results ?? data
+      setProducts(Array.isArray(raw) ? raw : [])
+    }
   }, [data])
 
-  const list = (products ?? []).filter(p =>
+  const list = (Array.isArray(products) ? products : []).filter(p =>
     p.name?.toLowerCase().includes(search.toLowerCase())
   )
 
