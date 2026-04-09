@@ -7,7 +7,7 @@ import kurta    from '../../assets/products/Clothing/photo-1621951753163-ee63e7f
 import fashion  from '../../assets/products/Clothing/photo-1679847628912-4c3e7402abc7.jpg'
 import headphone from '../../assets/products/Electronics/headphone.jpg'
 import laptop   from '../../assets/products/Electronics/laptop.jpg'
-import watchImg from '../../assets/products/Electronics/Watch/Gemini_Generated_Image_2yafks2yafks2yaf.png'
+import watchImg from '../../assets/products/Electronics/headphone.jpg'
 
 const CARDS = {
   topLeft:     { icon: Shirt,    title: 'Ethnic & Casual Wear',  desc: 'Explore kurtas, sarees, shirts & more — top brands, latest trends, best prices.',                              accent: '#4F46E5', img: kurta,      imgPos: 'center center', to: '/products?category=Clothing'    },
