@@ -17,15 +17,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for order list views."""
-    item_count = serializers.SerializerMethodField()
+    item_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Order
         fields = ('id', 'total_amount', 'status', 'item_count', 'created_at', 'updated_at')
         read_only_fields = fields
-
-    def get_item_count(self, obj):
-        return obj.items.count()
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
