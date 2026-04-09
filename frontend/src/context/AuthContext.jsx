@@ -1,31 +1,38 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { authService } from '../services'
-import { setAccessToken } from '../services/api'
+import { setAccessToken, MOCK_MODE } from '../services/api'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser]     = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // In mock mode, check sessionStorage directly — no network call needed
+    if (MOCK_MODE) {
+      const stored = sessionStorage.getItem('mockUser')
+      if (stored) {
+        setAccessToken('mock-token')
+        setUser(JSON.parse(stored))
+      }
+      setLoading(false)
+      return
+    }
+
     authService.refresh()
       .then(({ data }) => {
         setAccessToken(data.accessToken)
         return authService.me()
       })
       .then(({ data }) => setUser(data))
-      .catch(() => {
-        // No session — that's fine, user just isn't logged in
-        setUser(null)
-      })
+      .catch(() => setUser(null))
       .finally(() => setLoading(false))
   }, [])
 
   const login = async (credentials) => {
     const { data } = await authService.login(credentials)
     setAccessToken(data.accessToken)
-    // If backend returns user directly in login response, use it
     if (data.user) { setUser(data.user); return data.user }
     const { data: me } = await authService.me()
     setUser(me)
@@ -45,6 +52,7 @@ export function AuthProvider({ children }) {
     await authService.logout().catch(() => {})
     setAccessToken(null)
     setUser(null)
+    if (MOCK_MODE) sessionStorage.removeItem('mockUser')
   }
 
   return (

@@ -2,18 +2,119 @@
 
 @layer base {
   * { box-sizing: border-box; }
-  body { @apply bg-gray-950 text-gray-100 font-sans antialiased; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-gray-900; }
-  ::-webkit-scrollbar-thumb { @apply bg-indigo-600 rounded-full; }
+  body {
+    background-color: #ffedce;
+    color: #1a2340;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #ffedce; }
+  ::-webkit-scrollbar-thumb { background: #547792; border-radius: 99px; }
 }
 
 @layer utilities {
-  .glass { @apply bg-white/5 backdrop-blur-md border border-white/10; }
-  .card { @apply bg-gray-900 border border-gray-800 rounded-2xl; }
-  .btn-primary { @apply bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95; }
-  .btn-secondary { @apply bg-gray-800 hover:bg-gray-700 text-gray-100 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95; }
-  .btn-danger { @apply bg-red-600 hover:bg-red-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95; }
-  .input { @apply w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors; }
-  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+  .card {
+    background: #ffffff;
+    border: 1px solid #e8edf2;
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(26,50,99,0.06);
+  }
+  .glass {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(84,119,146,0.15);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #1A3263, #243d75);
+    color: #ffffff;
+    font-weight: 700;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 14px rgba(26,50,99,0.25);
+  }
+  .btn-primary:hover  { background: linear-gradient(135deg, #243d75, #1A3263); box-shadow: 0 6px 20px rgba(26,50,99,0.35); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-secondary {
+    background: #ffffff;
+    color: #1A3263;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid #1A3263;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-secondary:hover  { background: #f0f4ff; }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  .btn-danger {
+    background: #ef4444;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-danger:hover  { background: #dc2626; }
+  .btn-danger:active { transform: scale(0.97); }
+
+  .input {
+    width: 100%;
+    background: #ffffff;
+    border: 1.5px solid #dde3ea;
+    border-radius: 0.75rem;
+    padding: 0.625rem 1rem;
+    color: #1a2340;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 0.875rem;
+  }
+  .input::placeholder { color: #9eaab8; }
+  .input:focus {
+    outline: none;
+    border-color: #1A3263;
+    box-shadow: 0 0 0 3px rgba(26,50,99,0.1);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #1A3263, #547792);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, #FFC570, #e8a020);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-title {
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: #1a2340;
+  }
 }

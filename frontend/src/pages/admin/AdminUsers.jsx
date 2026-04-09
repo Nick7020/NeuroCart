@@ -4,6 +4,7 @@ import { userService } from '../../services'
 import { useNotification } from '../../context/NotificationContext'
 import { Spinner } from '../../components/ui/Spinner'
 import { formatDate } from '../../utils'
+import { Search } from 'lucide-react'
 
 const ROLES = ['customer', 'staff', 'admin']
 
@@ -43,55 +44,50 @@ export function AdminUsers() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Users</h1>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name / email..." className="input w-60" />
+        <h1 className="text-2xl font-extrabold text-gray-900">Users</h1>
+        <div className="relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name / email..." className="input pl-9 w-60" />
+        </div>
       </div>
 
       {loading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
-        <div className="card overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-800">
-                <tr className="text-gray-400">
-                  {['User', 'Email', 'Role', 'Joined', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-4 font-medium">{h}</th>
-                  ))}
-                </tr>
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>{['User', 'Email', 'Role', 'Joined', 'Status', 'Actions'].map(h => (
+                  <th key={h} className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">{h}</th>
+                ))}</tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-gray-50">
                 {list.map(u => (
-                  <tr key={u._id} className="hover:bg-gray-800/50 transition-colors">
+                  <tr key={u._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg,#1A3263,#547792)' }}>
                           {u.name?.[0]?.toUpperCase()}
                         </div>
-                        <span className="font-medium">{u.name}</span>
+                        <span className="font-semibold text-gray-800">{u.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-gray-400">{u.email}</td>
+                    <td className="px-5 py-4 text-gray-500">{u.email}</td>
                     <td className="px-5 py-4">
-                      <select
-                        value={u.role}
-                        onChange={e => changeRole(u, e.target.value)}
-                        disabled={!!busy}
-                        className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500"
-                      >
+                      <select value={u.role} onChange={e => changeRole(u, e.target.value)} disabled={!!busy}
+                        className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 text-gray-700">
                         {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                     </td>
-                    <td className="px-5 py-4 text-gray-400">{u.createdAt ? formatDate(u.createdAt) : 'N/A'}</td>
+                    <td className="px-5 py-4 text-gray-500">{u.createdAt ? formatDate(u.createdAt) : 'N/A'}</td>
                     <td className="px-5 py-4">
-                      <span className={`badge ${u.isBlocked ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                      <span className={`badge font-semibold ${u.isBlocked ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
                         {u.isBlocked ? 'Blocked' : 'Active'}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       {busy === u._id ? <Spinner size="sm" /> : (
-                        <button
-                          onClick={() => toggleBlock(u)}
-                          className={u.isBlocked ? 'btn-secondary text-xs py-1.5 px-3' : 'btn-danger text-xs py-1.5 px-3'}
-                        >
+                        <button onClick={() => toggleBlock(u)}
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${u.isBlocked ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}>
                           {u.isBlocked ? 'Unblock' : 'Block'}
                         </button>
                       )}
@@ -100,7 +96,7 @@ export function AdminUsers() {
                 ))}
               </tbody>
             </table>
-            {!list.length && <p className="text-center text-gray-500 py-12">No users found</p>}
+            {!list.length && <p className="text-center text-gray-400 py-12">No users found</p>}
           </div>
         </div>
       )}

@@ -1,41 +1,75 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Tv, Shirt, Dumbbell, Sofa, Sparkles, BookOpen } from 'lucide-react'
 
 const CATEGORIES = [
-  { label: 'Electronics', icon: '💻', color: 'from-blue-600/20 to-indigo-600/20 border-blue-500/30 hover:border-blue-400/60', text: 'text-blue-400' },
-  { label: 'Fashion', icon: '👗', color: 'from-pink-600/20 to-rose-600/20 border-pink-500/30 hover:border-pink-400/60', text: 'text-pink-400' },
-  { label: 'Sports', icon: '⚽', color: 'from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/60', text: 'text-green-400' },
-  { label: 'Home', icon: '🏠', color: 'from-orange-600/20 to-amber-600/20 border-orange-500/30 hover:border-orange-400/60', text: 'text-orange-400' },
-  { label: 'Beauty', icon: '💄', color: 'from-purple-600/20 to-violet-600/20 border-purple-500/30 hover:border-purple-400/60', text: 'text-purple-400' },
-  { label: 'Books', icon: '📚', color: 'from-yellow-600/20 to-amber-600/20 border-yellow-500/30 hover:border-yellow-400/60', text: 'text-yellow-400' },
+  { label: 'Electronics', icon: Tv,        color: '#fff', bg: '#1A3263' },
+  { label: 'Fashion',     icon: Shirt,      color: '#fff', bg: '#1A3263' },
+  { label: 'Sports',      icon: Dumbbell,   color: '#fff', bg: '#1A3263' },
+  { label: 'Home',        icon: Sofa,       color: '#fff', bg: '#1A3263' },
+  { label: 'Beauty',      icon: Sparkles,   color: '#fff', bg: '#1A3263' },
+  { label: 'Books',       icon: BookOpen,   color: '#fff', bg: '#1A3263' },
 ]
 
 export function CategorySection({ onCategorySelect }) {
-  const navigate = useNavigate()
+  const [active, setActive] = useState(null)
+
+  const handleClick = (label) => {
+    const next = active === label ? null : label
+    setActive(next)
+    onCategorySelect?.(next || 'All')
+  }
 
   return (
     <section className="mb-10">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-bold">Shop by Category</h2>
-        <span className="text-sm text-indigo-400 cursor-pointer hover:text-indigo-300">View all →</span>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
+          <p className="text-sm text-gray-400 mt-0.5">Find what you're looking for</p>
+        </div>
+        <button
+          onClick={() => { setActive(null); onCategorySelect?.('All') }}
+          className="text-sm font-semibold transition-colors hover:underline"
+          style={{ color: '#1A3263' }}
+        >
+          View all
+        </button>
       </div>
 
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {CATEGORIES.map((cat, i) => (
-          <motion.button
-            key={cat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07 }}
-            whileHover={{ y: -4, scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onCategorySelect?.(cat.label)}
-            className={`flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br ${cat.color} border transition-all duration-300 cursor-pointer`}
-          >
-            <span className="text-3xl">{cat.icon}</span>
-            <span className={`text-xs font-semibold ${cat.text}`}>{cat.label}</span>
-          </motion.button>
-        ))}
+        {CATEGORIES.map((cat, i) => {
+          const Icon = cat.icon
+          const isActive = active === cat.label
+          return (
+            <motion.button
+              key={cat.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06, duration: 0.3 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => handleClick(cat.label)}
+              className="flex flex-col items-center gap-3 py-5 px-3 rounded-2xl border transition-all duration-200 cursor-pointer"
+              style={{
+                background:   isActive ? '#1A3263' : '#fff',
+                borderColor:  isActive ? '#1A3263' : '#e5e7eb',
+                boxShadow:    isActive ? '0 4px 14px rgba(26,50,99,0.25)' : '0 1px 4px rgba(0,0,0,0.04)',
+              }}
+            >
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200"
+                style={{ background: '#1A3263' }}
+              >
+                <Icon size={20} color="#fff" strokeWidth={1.8} />
+              </div>
+              <span
+                className="text-xs font-semibold leading-tight text-center"
+                style={{ color: isActive ? '#fff' : '#374151' }}
+              >
+                {cat.label}
+              </span>
+            </motion.button>
+          )
+        })}
       </div>
     </section>
   )

@@ -5,12 +5,13 @@ import { useNotification } from '../../context/NotificationContext'
 import { Modal } from '../../components/ui/Modal'
 import { Spinner } from '../../components/ui/Spinner'
 import { formatCurrency } from '../../utils'
+import { Plus, Search, Edit2, Trash2 } from 'lucide-react'
 
 const EMPTY = { name: '', category: '', price: '', stock: '', description: '', images: '' }
 
 export function AdminProducts() {
   const { notify } = useNotification()
-  const { data, loading, error } = useFetch(() => productService.getAll({ limit: 100 }), [])
+  const { data, loading } = useFetch(() => productService.getAll({ limit: 100 }), [])
   const [products, setProducts] = useState(null)
   const [modal, setModal] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -22,7 +23,7 @@ export function AdminProducts() {
     p.name?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const openAdd = () => { setEditing(null); setForm(EMPTY); setModal(true) }
+  const openAdd  = () => { setEditing(null); setForm(EMPTY); setModal(true) }
   const openEdit = (p) => {
     setEditing(p)
     setForm({ ...p, images: p.images?.join(', ') || '', price: String(p.price), stock: String(p.stock) })
@@ -44,9 +45,8 @@ export function AdminProducts() {
         notify('Product created', 'success')
       }
       setModal(false)
-    } catch (err) {
-      notify(err.response?.data?.message || 'Save failed', 'error')
-    } finally { setSaving(false) }
+    } catch { notify('Save failed', 'error') }
+    finally { setSaving(false) }
   }
 
   const handleDelete = async (id) => {
@@ -58,56 +58,53 @@ export function AdminProducts() {
     } catch { notify('Delete failed', 'error') }
   }
 
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-extrabold text-gray-900">Products</h1>
         <div className="flex gap-3">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="input w-48" />
-          <button onClick={openAdd} className="btn-primary">+ Add Product</button>
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="input pl-9 w-48" />
+          </div>
+          <button onClick={openAdd} className="btn-primary gap-2"><Plus size={16} /> Add Product</button>
         </div>
       </div>
 
       {loading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
-        <div className="card overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-800">
-                <tr className="text-gray-400">
-                  {['Product', 'Category', 'Price', 'Stock', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-4 font-medium">{h}</th>
-                  ))}
-                </tr>
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>{['Product', 'Category', 'Price', 'Stock', 'Actions'].map(h => (
+                  <th key={h} className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">{h}</th>
+                ))}</tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-gray-50">
                 {list.map(p => (
-                  <tr key={p._id} className="hover:bg-gray-800/50 transition-colors">
+                  <tr key={p._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={p.images?.[0] || 'https://placehold.co/40x40/1f2937/6366f1?text=P'} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-800" />
-                        <span className="font-medium truncate max-w-[180px]">{p.name}</span>
+                        <img src={p.images?.[0] || 'https://placehold.co/40x40/f0f4ff/1A3263?text=P'} alt="" className="w-10 h-10 rounded-xl object-cover bg-gray-100 border border-gray-100" />
+                        <span className="font-semibold text-gray-800 truncate max-w-[160px]">{p.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-gray-400">{p.category}</td>
-                    <td className="px-5 py-4 font-semibold text-indigo-400">{formatCurrency(p.price)}</td>
+                    <td className="px-5 py-4 text-gray-500">{p.category}</td>
+                    <td className="px-5 py-4 font-bold" style={{ color: '#1A3263' }}>{formatCurrency(p.price)}</td>
                     <td className="px-5 py-4">
-                      <span className={`badge ${p.stock > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                        {p.stock}
-                      </span>
+                      <span className={`badge font-semibold ${p.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>{p.stock}</span>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <button onClick={() => openEdit(p)} className="btn-secondary text-xs py-1.5 px-3">Edit</button>
-                        <button onClick={() => handleDelete(p._id)} className="btn-danger text-xs py-1.5 px-3">Delete</button>
+                        <button onClick={() => openEdit(p)} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDelete(p._id)} className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {!list.length && <p className="text-center text-gray-500 py-12">No products found</p>}
+            {!list.length && <p className="text-center text-gray-400 py-12">No products found</p>}
           </div>
         </div>
       )}
@@ -122,17 +119,17 @@ export function AdminProducts() {
             { k: 'images', label: 'Image URLs (comma separated)', placeholder: 'https://...' },
           ].map(({ k, label, placeholder, type = 'text' }) => (
             <div key={k}>
-              <label className="block text-sm font-medium mb-1.5">{label}</label>
-              <input type={type} required value={form[k]} onChange={set(k)} placeholder={placeholder} className="input" />
+              <label className="block text-sm font-semibold mb-1.5 text-gray-700">{label}</label>
+              <input type={type} required value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} placeholder={placeholder} className="input" />
             </div>
           ))}
           <div>
-            <label className="block text-sm font-medium mb-1.5">Description</label>
-            <textarea value={form.description} onChange={set('description')} rows={3} className="input resize-none" placeholder="Product description..." />
+            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Description</label>
+            <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="input resize-none" placeholder="Product description..." />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setModal(false)} className="btn-secondary flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary flex-1 flex items-center justify-center gap-2">
+            <button type="submit" disabled={saving} className="btn-primary flex-1">
               {saving ? <Spinner size="sm" /> : (editing ? 'Update' : 'Create')}
             </button>
           </div>

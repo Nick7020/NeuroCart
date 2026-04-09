@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { cartService } from '../services'
 import { useAuth } from './AuthContext'
+import { MOCK_MODE } from '../services/api'
+import { cartService } from '../services'
+import { MOCK_PRODUCTS } from '../utils/mockData'
 
 const CartContext = createContext(null)
 
@@ -10,9 +12,23 @@ export function CartProvider({ children }) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (user?.role === 'customer') fetchCart()
-    else setItems([])
+    if (user) {
+      if (MOCK_MODE) {
+        // restore cart from sessionStorage in mock mode
+        const saved = sessionStorage.getItem('mockCart')
+        setItems(saved ? JSON.parse(saved) : [])
+      } else {
+        fetchCart()
+      }
+    } else {
+      setItems([])
+    }
   }, [user])
+
+  // persist mock cart
+  useEffect(() => {
+    if (MOCK_MODE) sessionStorage.setItem('mockCart', JSON.stringify(items))
+  }, [items])
 
   const fetchCart = async () => {
     setLoading(true)
@@ -24,21 +40,52 @@ export function CartProvider({ children }) {
   }
 
   const addItem = async (productId, quantity = 1) => {
+    if (MOCK_MODE) {
+      const product = MOCK_PRODUCTS.find(p => p._id === productId)
+      if (!product) return
+      setItems(prev => {
+        const existing = prev.find(i => i.productId === productId)
+        if (existing) {
+          return prev.map(i => i.productId === productId
+            ? { ...i, quantity: i.quantity + quantity }
+            : i
+          )
+        }
+        return [...prev, {
+          _id: 'cart-' + productId,
+          productId,
+          product,
+          price: product.price,
+          quantity,
+        }]
+      })
+      return
+    }
     const { data } = await cartService.add({ productId, quantity })
     setItems(data.items)
   }
 
   const updateItem = async (itemId, quantity) => {
+    if (quantity < 1) return removeItem(itemId)
+    if (MOCK_MODE) {
+      setItems(prev => prev.map(i => i._id === itemId ? { ...i, quantity } : i))
+      return
+    }
     const { data } = await cartService.update(itemId, { quantity })
     setItems(data.items)
   }
 
   const removeItem = async (itemId) => {
+    if (MOCK_MODE) {
+      setItems(prev => prev.filter(i => i._id !== itemId))
+      return
+    }
     const { data } = await cartService.remove(itemId)
     setItems(data.items)
   }
 
   const clearCart = async () => {
+    if (MOCK_MODE) { setItems([]); return }
     await cartService.clear()
     setItems([])
   }

@@ -1,21 +1,26 @@
-export function KpiCard({ label, value, icon, trend, color = 'indigo' }) {
-  const colors = {
-    indigo: 'from-indigo-600/20 to-indigo-600/5 border-indigo-500/30',
-    green: 'from-green-600/20 to-green-600/5 border-green-500/30',
-    purple: 'from-purple-600/20 to-purple-600/5 border-purple-500/30',
-    orange: 'from-orange-600/20 to-orange-600/5 border-orange-500/30',
+export function KpiCard({ label, value, icon, trend, color = 'blue' }) {
+  const styles = {
+    blue:   { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8' },
+    green:  { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' },
+    purple: { bg: '#f5f3ff', border: '#ddd6fe', text: '#6d28d9' },
+    orange: { bg: '#fffbeb', border: '#fde68a', text: '#b45309' },
   }
+  const s = styles[color] || styles.blue
   return (
-    <div className={`card p-5 bg-gradient-to-br ${colors[color]}`}>
+    <div className="bg-white rounded-2xl p-5 border transition-all hover:shadow-md" style={{ borderColor: s.border, boxShadow: '0 2px 12px rgba(26,50,99,0.06)' }}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-gray-400 text-sm">{label}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          {trend && <p className={`text-xs mt-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% vs last month
-          </p>}
+          <p className="text-gray-500 text-sm">{label}</p>
+          <p className="text-2xl font-extrabold mt-1 text-gray-900">{value}</p>
+          {trend != null && (
+            <p className={`text-xs mt-1 font-semibold ${trend > 0 ? 'text-green-600' : 'text-red-500'}`}>
+              {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% vs last month
+            </p>
+          )}
         </div>
-        <span className="text-3xl">{icon}</span>
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl" style={{ background: s.bg }}>
+          {icon}
+        </div>
       </div>
     </div>
   )
