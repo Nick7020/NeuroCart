@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\users\views.py
+# hypothesis_version: 6.151.12
+
+['-created_at', 'CANNOT_BLOCK_ADMIN', 'INVALID_TOKEN', 'NOT_A_VENDOR', 'Not found.', 'access', 'admin', 'approved', 'description', 'detail', 'error', 'message', 'refresh', 'shop_name', 'storeName', 'user', 'vendor', 'verification_status']

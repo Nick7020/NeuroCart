@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\payments\views.py
+# hypothesis_version: 6.151.12
+
+['FORBIDDEN', 'ORDER_NOT_PAYABLE', 'RAZORPAY_ERROR', 'admin', 'amount', 'code', 'currency', 'customer', 'detail', 'error', 'id', 'key_id', 'message', 'message_dict', 'ok', 'order_id', 'payment_method', 'pending', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'simulate_fail', 'status']

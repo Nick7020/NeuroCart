@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\analytics_app\admin_urls.py
+# hypothesis_version: 6.151.12
+
+['admin-order-list', 'admin-vendor-list', 'admin-vendor-verify', 'analytics/overview', 'analytics/sales', 'orders/', 'vendors']

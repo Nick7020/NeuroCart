@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\users\serializers.py
+# hypothesis_version: 6.151.12
+
+['Account is inactive.', 'Invalid credentials.', 'approved', 'created_at', 'customer', 'email', 'first_name', 'id', 'is_active', 'is_approved', 'last_name', 'password', 'role', 'updated_at', 'user', 'vendor', 'vendor_profile_id']

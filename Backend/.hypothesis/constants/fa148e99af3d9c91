@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\invoice_serializers.py
+# hypothesis_version: 6.151.12
+
+['id', 'invoice_number', 'issued_at', 'order', 'total_amount', 'vendor', 'vendor.shop_name']

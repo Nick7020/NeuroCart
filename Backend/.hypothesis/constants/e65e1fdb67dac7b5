@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\vendors\views.py
+# hypothesis_version: 6.151.12
+
+['-created_at', '-revenue', '0.00', 'error', 'id', 'message', 'order', 'order_count', 'patch', 'pending', 'pending_orders', 'product__id', 'product__name', 'request', 'shop_name', 'subtotal', 'top_products', 'total_revenue', 'user', 'vendor_profile']

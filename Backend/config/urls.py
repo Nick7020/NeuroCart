@@ -50,6 +50,9 @@ urlpatterns = [
 
     # AI Chatbot & Recommendations
     path('api/ai/', include('ai_app.urls')),
+
+    # Smart Recommendations
+    path('api/recommendations/', include('recommendations.urls')),
 ]
 
 if settings.DEBUG:

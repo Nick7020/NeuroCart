@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\payments\urls.py
+# hypothesis_version: 6.151.12
+
+['<uuid:order_id>/', 'payment-detail', 'payment-process', 'process/', 'razorpay-verify', 'razorpay-webhook', 'razorpay/verify/', 'razorpay/webhook/']

@@ -98,10 +98,7 @@ class RecommendationsView(APIView):
         if product_id:
             products = recommendation_service.get_also_bought(product_id, limit=5)
         else:
-            raw = analytics_service.get_trending_products(limit=10)
-            from products.models import Product
-            ids = [entry['product_id'] for entry in raw]
-            products = list(Product.objects.filter(id__in=ids, is_active=True))
+            products = analytics_service.get_trending_products(limit=10)
 
         serializer = ProductListSerializer(products, many=True, context={'request': request})
         return Response(serializer.data)

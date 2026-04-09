@@ -217,22 +217,53 @@ def get_vendor_analytics(vendor) -> dict:
 
 
 def get_trending_products(days=7, limit=10) -> list:
-    """Return top products by order frequency in the given window."""
+    """Return top trending Product objects by distinct order frequency in the given window.
+
+    Results are cached under 'rec_trending' for 3600 seconds.
+    Falls back to newest active in-stock products when no orders exist in the window.
+    """
+    from django.core.cache import cache
+
+    cached = cache.get('rec_trending')
+    if cached is not None:
+        return cached
+
+    limit = min(limit, 10)
     since = date.today() - timedelta(days=days)
 
-    qs = (
+    # Step 1: rank product IDs by distinct order count
+    ranked = (
         OrderItem.objects
         .filter(order__created_at__date__gte=since)
-        .values('product__id', 'product__name')
+        .values('product_id')
         .annotate(order_count=Count('order', distinct=True))
-        .order_by('-order_count')[:limit]
+        .order_by('-order_count')
     )
+    ranked_ids = [entry['product_id'] for entry in ranked]
 
-    return [
-        {
-            'product_id': entry['product__id'],
-            'product_name': entry['product__name'],
-            'order_count': entry['order_count'] or 0,
-        }
-        for entry in qs
-    ]
+    if ranked_ids:
+        # Step 2: fetch Product objects for ranked IDs
+        products_qs = (
+            Product.objects
+            .filter(id__in=ranked_ids, is_active=True, stock__gt=0)
+            .select_related('category', 'vendor')
+            .prefetch_related('images')
+        )
+        # Re-sort by rank order and slice to limit
+        products_by_id = {p.id: p for p in products_qs}
+        result = [products_by_id[pid] for pid in ranked_ids if pid in products_by_id][:limit]
+    else:
+        result = []
+
+    # Step 3: fallback to newest active in-stock products when window is empty
+    if not result:
+        result = list(
+            Product.objects
+            .filter(is_active=True, stock__gt=0)
+            .select_related('category', 'vendor')
+            .prefetch_related('images')
+            .order_by('-created_at')[:limit]
+        )
+
+    cache.set('rec_trending', result, 3600)
+    return result

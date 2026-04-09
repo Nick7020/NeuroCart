@@ -7,29 +7,9 @@ import { productService } from '../../services'
 import { useCart } from '../../context/CartContext'
 import { useNotification } from '../../context/NotificationContext'
 import { ImageCarousel } from '../../components/product/ImageCarousel'
-import { ProductCard } from '../../components/product/ProductCard'
-import { PageLoader, Spinner } from '../../components/ui/Spinner'
+import { PageLoader } from '../../components/ui/Spinner'
 import { formatCurrency } from '../../utils'
-
-function RelatedProducts({ category, currentId }) {
-  const { data, loading } = useFetch(
-    () => productService.getAll({ category }),
-    [category]
-  )
-  const products = (data?.products || data || []).filter(p => String(p._id) !== String(currentId)).slice(0, 5)
-
-  if (loading) return <div className="flex justify-center py-8"><Spinner /></div>
-  if (!products.length) return null
-
-  return (
-    <section className="mt-12">
-      <h2 className="text-xl font-bold mb-5" style={{ color: '#0f172a' }}>Related Products</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {products.map(p => <ProductCard key={p._id} product={p} />)}
-      </div>
-    </section>
-  )
-}
+import { RecommendationSection } from '../../components/ai/RecommendationSection'
 
 export function ProductDetail() {
   const { id } = useParams()
@@ -138,7 +118,7 @@ export function ProductDetail() {
         </motion.div>
       </div>
 
-      <RelatedProducts category={product.category} currentId={product._id} />
+      <RecommendationSection endpoint="product" productId={id} title="Related Products" />
     </div>
   )
 }

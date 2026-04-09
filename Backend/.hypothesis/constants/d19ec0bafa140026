@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\views.py
+# hypothesis_version: 6.151.12
+
+['-created_at', '-issued_at', '-order__created_at', 'CANCEL_FAILED', 'CHECKOUT_FAILED', 'PERMISSION_DENIED', 'STATUS_UPDATE_FAILED', 'admin', 'details', 'error', 'items', 'message', 'message_dict', 'new_status', 'order', 'order__items__vendor', 'order__user', 'order_item', 'payment_method', 'pk', 'product', 'shipping_address', 'status', 'user', 'vendor']

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { SlidersHorizontal, TrendingUp, Sparkles } from 'lucide-react'
+import { SlidersHorizontal, TrendingUp } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { Hero } from '../../components/ui/Hero'
 import { CategorySection } from '../../components/ui/CategorySection'
@@ -133,18 +133,12 @@ export function Home() {
         )}
       </section>
 
+      {/* Trending Section */}
+      <RecommendationSection endpoint="trending" title="🔥 Trending Now" />
+
+      {/* Personalised Recommendations */}
       {user && (
-        <section className="mt-14">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 bg-purple-600/20 rounded-xl flex items-center justify-center">
-              <Sparkles size={16} className="text-purple-400" />
-            </div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              AI Picks for You
-            </h2>
-          </div>
-          <RecommendationSection />
-        </section>
+        <RecommendationSection endpoint="user" title="✨ Recommended for You" />
       )}
     </div>
   )

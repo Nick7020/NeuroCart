@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\users\profile_urls.py
+# hypothesis_version: 6.151.12
+
+['<uuid:pk>/approve/', '<uuid:pk>/block/', '<uuid:pk>/unblock/', 'admin-user-approve', 'admin-user-block', 'admin-user-list', 'admin-user-unblock', 'me', 'user-profile']

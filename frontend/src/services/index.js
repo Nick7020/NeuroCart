@@ -88,6 +88,13 @@ export const aiService = {
   recommendations: (params) => api.get('/ai/recommendations', { params }),
 }
 
+export const recommendationService = {
+  getByProduct: (productId) => api.get(`/recommendations/product/${productId}/`),
+  getForUser:   ()          => api.get('/recommendations/user/'),
+  getTrending:  (params)    => api.get('/recommendations/trending/', { params }),
+  getAI:        (data)      => api.post('/recommendations/ai/', data),
+}
+
 export const invoiceService = {
   getAll: () => api.get('/invoices'),
   getById: (id) => api.get(`/invoices/${id}`),

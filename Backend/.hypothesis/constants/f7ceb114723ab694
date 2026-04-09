@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\services\payment_service.py
+# hypothesis_version: 6.151.12
+
+[100, 'INR', 'OK', 'ORDER_NOT_PAYABLE', 'PAYMENT_NOT_FOUND', 'amount', 'code', 'completed', 'confirmed', 'currency', 'detail', 'entity', 'event', 'failed', 'id', 'order_id', 'payload', 'payment', 'payment.captured', 'payment.failed', 'payment_capture', 'payment_method', 'payments', 'pending', 'razorpay', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'receipt', 'refunded', 'status', 'transaction_id']
