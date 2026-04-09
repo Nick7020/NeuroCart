@@ -36,5 +36,5 @@ urlpatterns = [
 
     # Analytics (admin + vendor)
     path('api/admin/', include('analytics_app.admin_urls')),
-    path('api/vendor/analytics', include('analytics_app.vendor_urls')),
+    path('api/vendor/', include('analytics_app.vendor_urls')),
 ]
