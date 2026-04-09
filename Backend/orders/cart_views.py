@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db.models import Prefetch
 
 from .models import Cart, CartItem
 from .cart_serializers import (
@@ -9,21 +10,24 @@ from .cart_serializers import (
     CartSerializer,
     UpdateCartItemSerializer,
 )
+from users.permissions import IsCustomer
 
 
 class CartDetailView(APIView):
     """GET /api/cart — get or create cart, return with total."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def get(self, request):
-        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart, _ = Cart.objects.prefetch_related(
+            Prefetch('items', queryset=CartItem.objects.select_related('product'))
+        ).get_or_create(user=request.user)
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
 
 class CartItemAddView(APIView):
     """POST /api/cart/items — add item or increment quantity if already in cart."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def post(self, request):
         serializer = AddCartItemSerializer(data=request.data, context={'request': request})
@@ -49,7 +53,7 @@ class CartItemAddView(APIView):
 
 class CartItemUpdateView(APIView):
     """PUT /api/cart/items/{id} — update item quantity."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def put(self, request, pk):
         try:
@@ -73,25 +77,32 @@ class CartItemUpdateView(APIView):
 
 class CartItemDeleteView(APIView):
     """DELETE /api/cart/items/{id} — remove a single item from cart."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def delete(self, request, pk):
         try:
-            cart_item = CartItem.objects.get(pk=pk, cart__user=request.user)
+            cart_item = CartItem.objects.select_related('cart').get(pk=pk, cart__user=request.user)
         except CartItem.DoesNotExist:
             return Response({'detail': 'Cart item not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        cart = cart_item.cart
+        cart_id = cart_item.cart_id
         cart_item.delete()
 
+        cart = Cart.objects.prefetch_related(
+            Prefetch('items', queryset=CartItem.objects.select_related('product'))
+        ).get(pk=cart_id)
         return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
 
 
 class CartClearView(APIView):
     """DELETE /api/cart/clear — remove all items from cart."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def delete(self, request):
         cart, _ = Cart.objects.get_or_create(user=request.user)
         cart.items.all().delete()
+        # Re-fetch with prefetch so CartSerializer doesn't hit N+1 (items will be empty)
+        cart = Cart.objects.prefetch_related(
+            Prefetch('items', queryset=CartItem.objects.select_related('product'))
+        ).get(pk=cart.pk)
         return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
@@ -38,3 +39,9 @@ urlpatterns = [
     path('api/admin/', include('analytics_app.admin_urls')),
     path('api/vendor/', include('analytics_app.vendor_urls')),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ]
