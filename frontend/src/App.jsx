@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ui/ProtectedRoute'
 
 import { CustomerLayout } from './layouts/CustomerLayout'
 import { AdminLayout } from './layouts/AdminLayout'
+import { VendorLayout } from './layouts/VendorLayout'
 
 import { Login } from './pages/auth/Login'
 import { Register } from './pages/auth/Register'
@@ -23,12 +24,11 @@ import { AdminProducts } from './pages/admin/AdminProducts'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminReports } from './pages/admin/AdminReports'
-import { VendorOrders } from './pages/admin/VendorOrders'
-import { AdminInvoices } from './pages/admin/AdminInvoices'
+
 import { VendorDashboard } from './pages/vendor/VendorDashboard'
 import { VendorProducts } from './pages/vendor/VendorProducts'
+import { VendorOrders } from './pages/vendor/VendorOrders'
 import { VendorCustomers } from './pages/vendor/VendorCustomers'
-import { VendorInvoices } from './pages/vendor/VendorInvoices'
 
 export default function App() {
   return (
@@ -47,22 +47,22 @@ export default function App() {
                 <Route path="/products" element={<Home />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={
-                  <ProtectedRoute roles={['customer', 'admin', 'staff']}>
+                  <ProtectedRoute roles={['customer', 'admin', 'vendor']}>
                     <Cart />
                   </ProtectedRoute>
                 } />
                 <Route path="/checkout" element={
-                  <ProtectedRoute roles={['customer']}>
+                  <ProtectedRoute roles={['customer', 'vendor']}>
                     <Checkout />
                   </ProtectedRoute>
                 } />
                 <Route path="/orders" element={
-                  <ProtectedRoute roles={['customer']}>
+                  <ProtectedRoute roles={['customer', 'vendor']}>
                     <Orders />
                   </ProtectedRoute>
                 } />
                 <Route path="/orders/:id" element={
-                  <ProtectedRoute roles={['customer', 'admin', 'staff']}>
+                  <ProtectedRoute roles={['customer', 'admin', 'vendor']}>
                     <OrderTracking />
                   </ProtectedRoute>
                 } />
@@ -73,27 +73,29 @@ export default function App() {
                 } />
               </Route>
 
-              {/* Admin + Vendor */}
+              {/* Vendor */}
+              <Route path="/vendor" element={
+                <ProtectedRoute roles={['vendor']}>
+                  <VendorLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<VendorDashboard />} />
+                <Route path="products" element={<VendorProducts />} />
+                <Route path="orders" element={<VendorOrders />} />
+                <Route path="customers" element={<VendorCustomers />} />
+              </Route>
+
+              {/* Admin */}
               <Route path="/admin" element={
-                <ProtectedRoute roles={['admin', 'staff', 'vendor']}>
+                <ProtectedRoute roles={['admin']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }>
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="orders" element={<AdminOrders />} />
-                <Route path="users" element={
-                  <ProtectedRoute roles={['admin']}>
-                    <AdminUsers />
-                  </ProtectedRoute>
-                } />
+                <Route path="users" element={<AdminUsers />} />
                 <Route path="reports" element={<AdminReports />} />
-                <Route path="vendor-orders" element={<VendorOrders />} />
-                <Route path="vendor-dashboard" element={<VendorDashboard />} />
-                <Route path="vendor-products" element={<VendorProducts />} />
-                <Route path="vendor-customers" element={<VendorCustomers />} />
-                <Route path="vendor-invoices" element={<VendorInvoices />} />
-                <Route path="invoices" element={<AdminInvoices />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
