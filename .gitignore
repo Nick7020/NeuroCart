@@ -1,0 +1,96 @@
+# =========================
+# 🔒 KIRO (IMPORTANT)
+# =========================
+.kiro/
+*.kiro
+kiro_specs/
+specs/
+Backend/.kiro/
+Frontend/.kiro/
+
+# =========================
+# 🧠 ENV & SECRETS
+# =========================
+.env
+.env.*
+*.env
+*.pem
+*.key
+secrets.json
+
+# =========================
+# ⚛️ FRONTEND (React / Vite)
+# =========================
+Frontend/node_modules/
+frontend/node_modules/
+
+Frontend/dist/
+frontend/dist/
+
+Frontend/build/
+frontend/build/
+
+Frontend/.vite/
+frontend/.vite/
+
+Frontend/.cache/
+frontend/.cache/
+
+Frontend/.DS_Store
+frontend/.DS_Store
+
+# =========================
+# 🐍 BACKEND (Django / Python)
+# =========================
+Backend/venv/
+backend/venv/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django specific
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# =========================
+# 🗄️ DATABASE
+# =========================
+*.sqlite3
+*.db
+
+# =========================
+# 🧪 TEST / CACHE
+# =========================
+.pytest_cache/
+.mypy_cache/
+coverage/
+
+# =========================
+# 🧰 IDE / SYSTEM FILES
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Mac / Windows junk
+.DS_Store
+Thumbs.db
+
+# =========================
+# 📦 BUILD / TEMP
+# =========================
+dist/
+build/
+tmp/
+temp/
+
+# =========================
+# 🚀 OPTIONAL (LOGS)
+# =========================
+logs/
+*.log

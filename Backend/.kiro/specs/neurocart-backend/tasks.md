@@ -208,8 +208,8 @@
 
 - [x] 9.1 Implement `analytics_app/models.py`:
   - `SalesRecord` (id UUID, vendor FK, order_item OneToOne, revenue, date DateField) with Meta indexes
-- [ ] 9.2 Create migrations
-- [ ] 9.3 Implement `services/analytics_service.py`:
+- [x] 9.2 Create migrations
+- [x] 9.3 Implement `services/analytics_service.py`:
   - `get_admin_overview()` — total revenue, orders, customers, vendors, products
   - `get_sales_by_period(start_date, end_date, granularity)` — daily/weekly/monthly breakdown
   - `get_top_vendors(limit=10)` — by total revenue
