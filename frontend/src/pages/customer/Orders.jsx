@@ -8,7 +8,7 @@ import { EmptyState } from '../../components/ui/EmptyState'
 
 export function Orders() {
   const { data, loading } = useFetch(() => orderService.myOrders(), [])
-  const orders = data?.orders || data || []
+  const orders = data?.results || data?.orders || data || []
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
   if (!orders.length) return (
@@ -21,18 +21,18 @@ export function Orders() {
       <h1 className="text-2xl font-extrabold text-gray-900 mb-8">My Orders</h1>
       <div className="space-y-4">
         {orders.map(order => (
-          <Link key={order._id} to={`/orders/${order._id}`}
+          <Link key={order.id || order._id} to={`/orders/${order.id || order._id}`}
             className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all block">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl" style={{ background: '#eff6ff' }}>📦</div>
               <div>
-                <p className="font-bold text-gray-800">Order #{order._id?.slice(-8).toUpperCase()}</p>
-                <p className="text-sm text-gray-400 mt-0.5">{formatDate(order.createdAt)} · {order.items?.length} item(s)</p>
+                <p className="font-bold text-gray-800">Order #{(order.id || order._id)?.slice(-8).toUpperCase()}</p>
+                <p className="text-sm text-gray-400 mt-0.5">{formatDate(order.created_at || order.createdAt)} · {order.item_count ?? order.items?.length ?? 0} item(s)</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <Badge status={order.status} />
-              <span className="font-extrabold" style={{ color: '#1A3263' }}>{formatCurrency(order.totalAmount)}</span>
+              <span className="font-extrabold" style={{ color: '#1A3263' }}>{formatCurrency(order.total_amount || order.totalAmount)}</span>
               <span className="text-gray-400 text-sm">Track →</span>
             </div>
           </Link>

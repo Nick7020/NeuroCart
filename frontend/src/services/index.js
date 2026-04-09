@@ -51,14 +51,18 @@ export const analyticsService = {
 export const userService = {
   me: () => api.get('/users/me'),
   update: (data) => api.put('/users/me', data),
+  getAll: () => api.get('/users/'),
+  block: (id) => api.post(`/users/${id}/block/`),
+  unblock: (id) => api.post(`/users/${id}/unblock/`),
+  approve: (id) => api.post(`/users/${id}/approve/`),
 }
 
 export const vendorService = {
   register: (data) => api.post('/vendors/register', data),
   dashboard: () => api.get('/vendor/dashboard'),
   getOrders: () => api.get('/vendor/orders/'),
-  acceptOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'CONFIRMED' }),
-  rejectOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'CANCELLED' }),
+  acceptOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'processing' }),
+  rejectOrder: (id) => api.patch(`/vendor/orders/${id}/status/`, { new_status: 'cancelled' }),
   analytics: () => api.get('/vendor/analytics'),
   getProducts: () => api.get('/vendor/products'),
   updateProfile: (data) => api.put('/vendor/profile', data),
@@ -80,6 +84,6 @@ export const aiService = {
 }
 
 export const invoiceService = {
-  getAll: () => api.get('/invoices'),
-  create: (data) => api.post('/invoices', data),
+  getAll: () => api.get('/invoices/'),
+  getById: (id) => api.get(`/invoices/${id}/`),
 }

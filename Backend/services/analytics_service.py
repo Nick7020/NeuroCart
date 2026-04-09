@@ -15,7 +15,10 @@ from vendors.models import VendorProfile
 
 
 def get_admin_overview() -> dict:
-    """Return total revenue, orders, customers, vendors, products."""
+    """Return nested analytics shape expected by AdminDashboard.jsx."""
+    from django.db.models import Q
+
+    # --- KPIs ---
     total_revenue = SalesRecord.objects.aggregate(
         total=Sum('revenue', default=Decimal('0.00'))
     )['total'] or Decimal('0.00')
@@ -25,12 +28,64 @@ def get_admin_overview() -> dict:
     total_vendors = VendorProfile.objects.count()
     total_products = Product.objects.filter(is_active=True).count()
 
+    # --- Sales Trend: last 30 days daily ---
+    today = date.today()
+    thirty_days_ago = today - timedelta(days=29)
+    raw_trend = get_sales_by_period(thirty_days_ago, today, granularity='day')
+    sales_trend = [
+        {
+            'date': entry['period'].strftime('%Y-%m-%d') if hasattr(entry['period'], 'strftime') else str(entry['period'])[:10],
+            'revenue': entry['total_revenue'],
+            'orders': entry['total_orders'],
+        }
+        for entry in raw_trend
+    ]
+
+    # --- Order Status breakdown ---
+    order_status = list(
+        Order.objects
+        .values('status')
+        .annotate(count=Count('id'))
+        .order_by('status')
+    )
+
+    # --- Vendor Stats ---
+    accepted_statuses = ('processing', 'shipped', 'delivered')
+    vendor_stats = []
+    for vendor in VendorProfile.objects.select_related('user').all():
+        items_qs = OrderItem.objects.filter(vendor=vendor)
+        vendor_orders = items_qs.values('order').distinct().count()
+        vendor_revenue = items_qs.aggregate(
+            total=Sum('subtotal', default=Decimal('0.00'))
+        )['total'] or Decimal('0.00')
+        accepted = items_qs.filter(status__in=accepted_statuses).count()
+        rejected = items_qs.filter(status='cancelled').count()
+        vendor_stats.append({
+            'vendorName': vendor.shop_name,
+            'orders': vendor_orders,
+            'revenue': vendor_revenue,
+            'accepted': accepted,
+            'rejected': rejected,
+        })
+
+    # --- Top-level vendor aggregates for Vendor KPI cards ---
+    vendor_revenue_total = sum(v['revenue'] for v in vendor_stats)
+    vendor_orders_total = sum(v['orders'] for v in vendor_stats)
+
     return {
-        'total_revenue': total_revenue,
-        'total_orders': total_orders,
-        'total_customers': total_customers,
-        'total_vendors': total_vendors,
-        'total_products': total_products,
+        'kpis': {
+            'revenue': total_revenue,
+            'orders': total_orders,
+            'customers': total_customers,
+            'products': total_products,
+        },
+        'salesTrend': sales_trend,
+        'orderStatus': order_status,
+        'vendorStats': vendor_stats,
+        # Top-level vendor KPI fields for AdminDashboard vendor cards
+        'vendorRevenue': vendor_revenue_total,
+        'vendorOrders': vendor_orders_total,
+        'totalVendors': total_vendors,
     }
 
 

@@ -3,6 +3,22 @@ from django.contrib.auth import authenticate
 from .models import User
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    is_approved = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'role', 'first_name', 'last_name', 'is_active', 'is_approved', 'created_at')
+
+    def get_is_approved(self, obj):
+        if obj.role != 'vendor':
+            return None
+        try:
+            return obj.vendor_profile.verification_status == 'approved'
+        except Exception:
+            return False
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     role = serializers.ChoiceField(choices=['customer', 'vendor'])

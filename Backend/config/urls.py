@@ -32,6 +32,9 @@ urlpatterns = [
     # Orders
     path('api/orders/', include('orders.urls')),
 
+    # Invoices
+    path('api/invoices/', include('orders.invoice_urls')),
+
     # Payments
     path('api/payments/', include('payments.urls')),
 

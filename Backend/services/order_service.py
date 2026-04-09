@@ -5,7 +5,7 @@ from django.db import transaction
 from django.core.exceptions import PermissionDenied, ValidationError
 
 
-def checkout(user, payment_method):
+def checkout(user, payment_method, shipping_address=None):
     """
     Full atomic checkout flow with select_for_update.
     Returns the created Order.
@@ -57,6 +57,7 @@ def checkout(user, payment_method):
             user=user,
             total_amount=total_amount,
             status='pending',
+            shipping_address=shipping_address,
         )
 
         for item in cart_items:
@@ -185,6 +186,9 @@ def update_order_item_status(order_item, vendor, new_status):
             order.status = new_order_status
             order.save(update_fields=['status'])
 
+        if new_status == 'processing':
+            create_invoice(order_item)
+
         if new_status == 'delivered':
             create_sales_record(order_item)
 
@@ -207,3 +211,33 @@ def create_sales_record(order_item):
             'date': timezone.now().date(),
         }
     )
+
+
+def create_invoice(order_item):
+    """
+    Called when an OrderItem status transitions to processing.
+    Creates exactly one Invoice per (order, vendor) pair, with a unique
+    invoice_number in the format INV-{YYYY}-{count:06d}.
+    Uses select_for_update to prevent duplicate invoice numbers.
+    """
+    from orders.models import Invoice
+    from django.utils import timezone
+
+    year = timezone.now().year
+    vendor = order_item.vendor
+    order = order_item.order
+
+    # Avoid creating a duplicate invoice for the same order+vendor
+    if Invoice.objects.filter(order=order, vendor=vendor).exists():
+        return
+
+    with transaction.atomic():
+        # Lock to prevent concurrent invoice number collisions
+        count = Invoice.objects.select_for_update().count()
+        invoice_number = f"INV-{year}-{count + 1:06d}"
+        Invoice.objects.create(
+            order=order,
+            vendor=vendor,
+            invoice_number=invoice_number,
+            total_amount=order_item.subtotal,
+        )

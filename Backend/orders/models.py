@@ -52,16 +52,17 @@ ORDER_ITEM_STATUS = [
 
 
 class Order(models.Model):
-    id           = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    user         = models.ForeignKey(
-                     'users.User',
-                     on_delete=models.PROTECT,
-                     related_name='orders'
-                   )
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    status       = models.CharField(choices=ORDER_STATUS, default='pending', max_length=20)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
+    id               = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    user             = models.ForeignKey(
+                         'users.User',
+                         on_delete=models.PROTECT,
+                         related_name='orders'
+                       )
+    total_amount     = models.DecimalField(max_digits=12, decimal_places=2)
+    status           = models.CharField(choices=ORDER_STATUS, default='pending', max_length=20)
+    shipping_address = models.JSONField(null=True, blank=True)
+    created_at       = models.DateTimeField(auto_now_add=True)
+    updated_at       = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
@@ -91,3 +92,25 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"OrderItem({self.product}, qty={self.quantity}, {self.status})"
+
+
+class Invoice(models.Model):
+    id             = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    order          = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='invoices')
+    vendor         = models.ForeignKey(
+                       'vendors.VendorProfile',
+                       on_delete=models.PROTECT,
+                       related_name='invoices'
+                     )
+    invoice_number = models.CharField(max_length=50, unique=True)
+    issued_at      = models.DateTimeField(auto_now_add=True)
+    total_amount   = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['vendor', 'issued_at']),
+            models.Index(fields=['order']),
+        ]
+
+    def __str__(self):
+        return f"Invoice({self.invoice_number})"

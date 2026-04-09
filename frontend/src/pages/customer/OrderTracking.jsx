@@ -28,8 +28,8 @@ export function OrderTracking() {
       {/* Header */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5 shadow-sm flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-gray-900">Order #{order._id?.slice(-8).toUpperCase()}</h1>
-          <p className="text-gray-400 text-sm mt-1">Placed on {formatDate(order.createdAt)}</p>
+          <h1 className="text-xl font-extrabold text-gray-900">Order #{(order.id || order._id)?.slice(-8).toUpperCase()}</h1>
+          <p className="text-gray-400 text-sm mt-1">Placed on {formatDate(order.created_at || order.createdAt)}</p>
         </div>
         <Badge status={order.status} />
       </div>
@@ -51,8 +51,8 @@ export function OrderTracking() {
                   </div>
                   <div className="pt-2">
                     <p className={`font-semibold ${done ? 'text-gray-900' : 'text-gray-300'}`}>{status}</p>
-                    {i === currentStep && order.updatedAt && (
-                      <p className="text-xs text-blue-500 mt-0.5">{formatDate(order.updatedAt)}</p>
+                    {i === currentStep && (order.updated_at || order.updatedAt) && (
+                      <p className="text-xs text-blue-500 mt-0.5">{formatDate(order.updated_at || order.updatedAt)}</p>
                     )}
                   </div>
                 </div>
@@ -68,20 +68,20 @@ export function OrderTracking() {
         <div className="space-y-3">
           {order.items?.map((item, i) => (
             <div key={i} className="flex items-center gap-4">
-              <img src={item.product?.images?.[0] || 'https://placehold.co/60x60/f0f4ff/1A3263?text=P'}
-                alt={item.product?.name} className="w-14 h-14 rounded-xl object-cover bg-gray-50 border border-gray-100" />
+              <img src={item.product?.primary_image || item.product?.images?.[0]?.image_url || item.product?.images?.[0] || 'https://placehold.co/60x60/f0f4ff/1A3263?text=P'}
+                alt={item.product?.name} className="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100" />
               <div className="flex-1">
                 <p className="font-semibold text-gray-800">{item.product?.name}</p>
                 <p className="text-sm text-gray-400">Qty: {item.quantity}</p>
               </div>
-              <span className="font-bold text-gray-900">{formatCurrency(item.price * item.quantity)}</span>
+              <span className="font-bold text-gray-900">{formatCurrency((item.unit_price || item.price) * item.quantity)}</span>
             </div>
           ))}
         </div>
         <hr className="border-gray-100 my-4" />
         <div className="flex justify-between font-extrabold text-lg">
           <span className="text-gray-900">Total</span>
-          <span style={{ color: '#1A3263' }}>{formatCurrency(order.totalAmount)}</span>
+          <span style={{ color: '#1A3263' }}>{formatCurrency(order.total_amount || order.totalAmount)}</span>
         </div>
       </div>
 
