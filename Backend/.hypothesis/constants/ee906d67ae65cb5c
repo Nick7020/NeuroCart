@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\services\analytics_service.py
+# hypothesis_version: 6.151.12
+
+['-order_count', '-total_revenue', '-units_sold', '0.00', 'customer', 'daily_revenue', 'date', 'day', 'month', 'order', 'order_count', 'order_item__order', 'period', 'product__id', 'product__name', 'product_id', 'product_name', 'quantity', 'revenue', 'shop_name', 'top_products', 'total', 'total_customers', 'total_orders', 'total_products', 'total_revenue', 'total_vendors', 'units_sold', 'vendor__id', 'vendor__shop_name', 'vendor_id', 'week']

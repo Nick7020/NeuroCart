@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\vendors\admin.py
+# hypothesis_version: 6.151.12
+
+['approve_vendor', 'approved', 'created_at', 'id', 'rating', 'reject_vendor', 'rejected', 'shop_name', 'updated_at', 'user__email', 'verification_status']

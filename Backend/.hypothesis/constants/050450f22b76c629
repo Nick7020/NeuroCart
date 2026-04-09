@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\products\models.py
+# hypothesis_version: 6.151.12
+
+[200, 500, 1000, 'category', 'children', 'images', 'is_active', 'orders.OrderItem', 'price', 'product', 'products', 'reviews', 'self', 'user', 'vendor']

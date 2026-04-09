@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\analytics_app\migrations\0001_initial.py
+# hypothesis_version: 6.151.12
+
+['0001_initial', '0002_initial', 'SalesRecord', 'date', 'id', 'indexes', 'order_item', 'orders', 'orders.orderitem', 'revenue', 'sales_records', 'vendor', 'vendors']

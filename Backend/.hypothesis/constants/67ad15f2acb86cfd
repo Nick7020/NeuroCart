@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\vendors\dashboard_urls.py
+# hypothesis_version: 6.151.12
+
+['dashboard', 'products', 'profile', 'vendor-dashboard', 'vendor-product-list']

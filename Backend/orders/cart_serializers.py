@@ -43,17 +43,20 @@ class AddCartItemSerializer(serializers.Serializer):
         if product.stock <= 0:
             raise serializers.ValidationError({'product_id': 'This product is out of stock.'})
 
-        # Check if item already in cart — if so, validate combined quantity
+        # Check combined quantity (existing cart item + new request) against stock
         request = self.context.get('request')
+        existing_qty = 0
         if request:
             cart = Cart.objects.filter(user=request.user).first()
             if cart:
                 existing = CartItem.objects.filter(cart=cart, product=product).first()
-                combined_qty = (existing.quantity if existing else 0) + attrs['quantity']
-                if combined_qty > product.stock:
-                    raise serializers.ValidationError(
-                        {'quantity': f'Only {product.stock} units available (you already have {existing.quantity if existing else 0} in cart).'}
-                    )
+                existing_qty = existing.quantity if existing else 0
+
+        combined_qty = existing_qty + attrs['quantity']
+        if combined_qty > product.stock:
+            raise serializers.ValidationError(
+                {'quantity': f'Only {product.stock} units available (you already have {existing_qty} in cart).'}
+            )
 
         attrs['product'] = product
         return attrs

@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\products\filters.py
+# hypothesis_version: 6.151.12
+
+['category', 'filter_category', 'filter_in_stock', 'gte', 'in_stock', 'lte', 'pk', 'price', 'price_max', 'price_min', 'vendor__id', 'vendor_id']

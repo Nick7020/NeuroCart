@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\analytics_app\views.py
+# hypothesis_version: 6.151.12
+
+[400, 'day', 'detail', 'end', 'get', 'granularity', 'month', 'start', 'top_products', 'top_vendors', 'week']

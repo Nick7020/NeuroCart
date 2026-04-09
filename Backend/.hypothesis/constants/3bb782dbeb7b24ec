@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\vendors\tests.py
+# hypothesis_version: 6.151.12
+
+[200, 201, 403, '9.99', 'A product', 'A test shop', 'Electronics', 'My New Shop', 'Selling stuff', 'Test Product', 'Test Shop', 'admin', 'admin-vendor-verify', 'admin@example.com', 'approved', 'category', 'description', 'electronics', 'id', 'json', 'name', 'pending', 'price', 'product-list-create', 'rejected', 'shop_name', 'stock', 'testpass123', 'vendor', 'vendor-register', 'vendor@example.com', 'verification_status']

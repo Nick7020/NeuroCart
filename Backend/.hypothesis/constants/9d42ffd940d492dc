@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\products\views.py
+# hypothesis_version: 6.151.12
+
+['-order_count', 'POST', 'Product not found.', 'Review not found.', 'category', 'children', 'created_at', 'description', 'id', 'images', 'is_active', 'name', 'pk', 'price', 'product', 'request', 'review_id', 'reviews__user', 'user', 'vendor']

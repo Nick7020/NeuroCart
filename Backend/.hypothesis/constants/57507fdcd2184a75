@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\users\tests.py
+# hypothesis_version: 6.151.12
+
+[200, 201, 400, 401, '/api/auth/login', '/api/auth/register', '/api/users/me', 'Alice', 'Hacker', 'Smith', 'abc', 'access', 'admin', 'badrole@example.com', 'customer', 'dup@example.com', 'email', 'first_name', 'ghost@example.com', 'hacked@example.com', 'hash@example.com', 'inactive@example.com', 'json', 'last_name', 'login@example.com', 'new@example.com', 'nopw@example.com', 'password', 'profile@example.com', 'readonly@example.com', 'refresh', 'role', 'securepass1', 'securepass123', 'short@example.com', 'superadmin', 'test@example.com', 'update@example.com', 'usera@example.com', 'userb@example.com', 'vendor', 'vendor@example.com', 'wrongpassword', 'wrongpw@example.com']

@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\vendors\migrations\0001_initial.py
+# hypothesis_version: 6.151.12
+
+[0.0, 255, 'Approved', 'Pending', 'Rejected', 'VendorProfile', 'approved', 'created_at', 'description', 'id', 'indexes', 'pending', 'rating', 'rejected', 'shop_name', 'total_sales', 'updated_at', 'user', 'vendor_profile', 'verification_status']

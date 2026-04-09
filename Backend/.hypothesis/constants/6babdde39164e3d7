@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\products\migrations\0001_initial.py
+# hypothesis_version: 6.151.12
+
+[200, 500, 1000, '0001_initial', 'Category', 'Product', 'ProductImage', 'Review', 'category', 'children', 'comment', 'created_at', 'description', 'id', 'image_url', 'images', 'is_active', 'is_primary', 'name', 'order_item', 'orders', 'orders.orderitem', 'parent_category', 'price', 'product', 'products', 'products.category', 'products.product', 'rating', 'review', 'reviews', 'slug', 'stock', 'updated_at', 'user', 'vendor', 'vendors']

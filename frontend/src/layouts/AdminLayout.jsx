@@ -1,15 +1,23 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
-import { LayoutDashboard, Package, ShoppingBag, Users, BarChart2, Home, LogOut, Zap, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Users, BarChart2, Home, LogOut, ChevronLeft, ChevronRight, FileText, ClipboardList } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const LINKS = [
-  { to: '/admin',          label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-  { to: '/admin/products', label: 'Products',  icon: <Package size={18} /> },
-  { to: '/admin/orders',   label: 'Orders',    icon: <ShoppingBag size={18} /> },
-  { to: '/admin/users',    label: 'Users',     icon: <Users size={18} /> },
-  { to: '/admin/reports',  label: 'Reports',   icon: <BarChart2 size={18} /> },
+const ADMIN_LINKS = [
+  { to: '/admin',               label: 'Dashboard',     icon: <LayoutDashboard size={18} /> },
+  { to: '/admin/orders',        label: 'Orders',        icon: <ShoppingBag size={18} /> },
+  { to: '/admin/vendor-orders', label: 'Vendor Orders', icon: <ClipboardList size={18} /> },
+  { to: '/admin/invoices',      label: 'Invoices',      icon: <FileText size={18} /> },
+  { to: '/admin/users',         label: 'Users',         icon: <Users size={18} /> },
+  { to: '/admin/reports',       label: 'Reports',       icon: <BarChart2 size={18} /> },
+]
+
+const VENDOR_LINKS = [
+  { to: '/admin/vendor-dashboard', label: 'Dashboard',   icon: <LayoutDashboard size={18} /> },
+  { to: '/admin/vendor-orders',    label: 'Orders',      icon: <ClipboardList size={18} /> },
+  { to: '/admin/vendor-products',  label: 'My Products', icon: <Package size={18} /> },
+  { to: '/admin/invoices',         label: 'Invoices',    icon: <FileText size={18} /> },
 ]
 
 export function AdminLayout() {
@@ -20,23 +28,34 @@ export function AdminLayout() {
 
   const handleLogout = async () => { await logout(); navigate('/login') }
 
+  const isVendor = user?.role === 'vendor'
+  const links = isVendor ? VENDOR_LINKS : ADMIN_LINKS
+  const panelTitle = isVendor ? 'Vendor Panel' : 'Admin Panel'
+
   return (
     <div className="min-h-screen flex" style={{ background: '#ffedce' }}>
       {/* Sidebar */}
       <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-white border-r border-gray-100 flex flex-col transition-all duration-300 shadow-sm flex-shrink-0`}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
           {!collapsed && (
-            <div className="flex items-center gap-2">
-              <img src={logo} alt="NeuroCart" className="h-8 w-auto object-contain" />
-            </div>
+            <img src={logo} alt="NeuroCart" className="h-8 w-auto object-contain" />
           )}
           <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 ml-auto">
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         </div>
 
+        {/* Role badge */}
+        {!collapsed && (
+          <div className="px-4 py-2 border-b border-gray-100">
+            <span className={`text-xs font-bold px-2 py-1 rounded-full ${isVendor ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'}`}>
+              {isVendor ? '🏪 Vendor' : '🛡️ Admin'}
+            </span>
+          </div>
+        )}
+
         <nav className="flex-1 p-3 space-y-1">
-          {LINKS.map(link => {
+          {links.map(link => {
             const active = location.pathname === link.to
             return (
               <Link key={link.to} to={link.to}
@@ -62,7 +81,7 @@ export function AdminLayout() {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 shadow-sm">
-          <h1 className="text-lg font-bold text-gray-800">Admin Panel</h1>
+          <h1 className="text-lg font-bold text-gray-800">{panelTitle}</h1>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm" style={{ background: 'linear-gradient(135deg,#1A3263,#547792)' }}>
               {user?.name?.[0]?.toUpperCase()}
