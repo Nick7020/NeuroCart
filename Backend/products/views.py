@@ -162,8 +162,13 @@ class ProductRecommendationsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        from services.recommendation_service import get_also_bought
-        recommendations = get_also_bought(product_id=pk)
+        from rest_framework.exceptions import NotFound
+        from services import recommendation_service
+
+        if not Product.objects.filter(pk=pk).exists():
+            raise NotFound('Product not found.')
+
+        recommendations = recommendation_service.get_also_bought(product_id=pk)
         serializer = ProductListSerializer(recommendations, many=True, context={'request': request})
         return Response(serializer.data)
 

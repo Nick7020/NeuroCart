@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
+from django.db.models import Count, Prefetch
 
 from .models import Order, OrderItem
 from .serializers import (
@@ -48,7 +49,7 @@ class OrderListView(generics.ListAPIView):
         return (
             Order.objects
             .filter(user=self.request.user)
-            .prefetch_related('items')
+            .annotate(item_count=Count('items'))
             .order_by('-created_at')
         )
 
@@ -56,29 +57,29 @@ class OrderListView(generics.ListAPIView):
 class OrderDetailView(generics.RetrieveAPIView):
     """GET /api/orders/{id} — customer (own) or admin."""
     serializer_class = OrderDetailSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrderOwner]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.role == 'admin':
-            return Order.objects.prefetch_related('items__product', 'items__vendor').all()
-        return Order.objects.prefetch_related('items__product', 'items__vendor').filter(user=user)
+        items_qs = OrderItem.objects.select_related('product', 'vendor')
+        return Order.objects.select_related('user', 'payment').prefetch_related(
+            Prefetch('items', queryset=items_qs)
+        )
 
     def get_object(self):
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
-        # Object-level check for customers
-        if self.request.user.role != 'admin' and obj.user != self.request.user:
-            from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
-            raise DRFPermissionDenied()
+        # Admins bypass object-level ownership check
+        if self.request.user.role != 'admin':
+            self.check_object_permissions(self.request, obj)
         return obj
 
 
 class OrderCancelView(APIView):
     """POST /api/orders/{pk}/cancel — customer only."""
-    permission_classes = [IsAuthenticated, IsCustomer]
+    permission_classes = [IsAuthenticated, IsCustomer, IsOrderOwner]
 
     def post(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
 
         try:
             order = order_service.cancel_order(order=order, user=request.user)
@@ -103,7 +104,7 @@ class VendorOrderItemListView(generics.ListAPIView):
         qs = (
             OrderItem.objects
             .filter(vendor=vendor)
-            .select_related('order', 'product', 'vendor')
+            .select_related('order', 'product', 'vendor', 'order__user')
             .order_by('-order__created_at')
         )
         status_filter = self.request.query_params.get('status')
