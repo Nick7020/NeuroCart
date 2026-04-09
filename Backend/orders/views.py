@@ -194,3 +194,21 @@ class InvoiceDetailView(generics.RetrieveAPIView):
         elif hasattr(user, 'vendor_profile'):
             return Invoice.objects.filter(vendor=user.vendor_profile)
         return Invoice.objects.none()
+
+
+class AdminOrderListView(generics.ListAPIView):
+    """GET /api/admin/orders — admin view of all orders, paginated."""
+    serializer_class = OrderListSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_queryset(self):
+        qs = (
+            Order.objects
+            .select_related('user')
+            .annotate(item_count=Count('items'))
+            .order_by('-created_at')
+        )
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs

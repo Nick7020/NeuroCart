@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { MOCK_PRODUCTS, MOCK_ORDERS, MOCK_ANALYTICS, MOCK_USERS, MOCK_REPORTS } from '../utils/mockData'
 
-export const MOCK_MODE = false // flip to true to use mock data without backend
+export const MOCK_MODE = true // flip to false when backend is ready
 
 let accessToken = null
 export const setAccessToken = (t) => (accessToken = t)

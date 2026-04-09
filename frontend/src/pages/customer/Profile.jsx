@@ -12,7 +12,8 @@ export function Profile() {
   const { user } = useAuth()
   const [tab, setTab] = useState('orders')
   const { data, loading } = useFetch(() => orderService.myOrders(), [])
-  const orders = data?.results ?? data?.orders ?? data ?? []
+  const raw = data?.results ?? data?.orders ?? data
+  const orders = Array.isArray(raw) ? raw : []
 
   return (
     <div className="max-w-4xl mx-auto">

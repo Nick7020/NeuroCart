@@ -11,7 +11,8 @@ export function AdminInvoices() {
   const [selectedInvoice, setSelectedInvoice] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
 
-  const invoices = data?.results ?? data ?? []
+  const raw = data?.results ?? data ?? []
+  const invoices = Array.isArray(raw) ? raw : []
 
   const handleView = (invoice) => {
     setSelectedInvoice(invoice)

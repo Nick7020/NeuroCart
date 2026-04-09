@@ -18,8 +18,10 @@ export function AdminUsers() {
   const [tab, setTab]               = useState('all')
   const [busy, setBusy]             = useState(null)
 
-  const allUsers   = users ?? data?.users ?? []
-  const allVendors = vendorData?.vendors ?? vendorData ?? []
+  const rawUsers   = data?.results ?? data?.users ?? []
+  const allUsers   = users ?? (Array.isArray(rawUsers) ? rawUsers : [])
+  const rawVendors = vendorData?.results ?? vendorData?.vendors ?? []
+  const allVendors = Array.isArray(rawVendors) ? rawVendors : []
 
   // Build vendor store map: userId -> vendor profile
   const vendorMap = allVendors.reduce((acc, v) => {
@@ -27,7 +29,7 @@ export function AdminUsers() {
     return acc
   }, {})
 
-  const list = allUsers.filter(u => {
+  const list = (Array.isArray(allUsers) ? allUsers : []).filter(u => {
     const name = u.first_name || u.email?.split('@')[0] || ''
     const matchSearch = name.toLowerCase().includes(search.toLowerCase()) ||
                         u.email?.toLowerCase().includes(search.toLowerCase())
@@ -36,7 +38,8 @@ export function AdminUsers() {
   })
 
   const counts = TABS.reduce((acc, t) => {
-    acc[t] = t === 'all' ? allUsers.length : allUsers.filter(u => u.role === t).length
+    const userList = Array.isArray(allUsers) ? allUsers : []
+    acc[t] = t === 'all' ? userList.length : userList.filter(u => u.role === t).length
     return acc
   }, {})
 
@@ -45,19 +48,21 @@ export function AdminUsers() {
     try {
       const action = u.is_active ? 'block' : 'unblock'
       await userService[action](u.id)
-      setUsers(allUsers.map(x => x.id === u.id ? { ...x, is_active: !x.is_active } : x))
+      const userList = Array.isArray(allUsers) ? allUsers : []
+      setUsers(userList.map(x => x.id === u.id ? { ...x, is_active: !x.is_active } : x))
       notify(u.is_active ? 'User blocked' : 'User unblocked', 'success')
     } catch { notify('Action failed', 'error') }
     finally { setBusy(null) }
   }
 
   const unblockAll = async () => {
-    const blocked = allUsers.filter(u => !u.is_active)
+    const userList = Array.isArray(allUsers) ? allUsers : []
+    const blocked = userList.filter(u => !u.is_active)
     if (!blocked.length) return notify('No blocked users', 'info')
     setBusy('all')
     try {
       await Promise.all(blocked.map(u => userService.unblock(u.id)))
-      setUsers(allUsers.map(x => ({ ...x, is_active: true })))
+      setUsers(userList.map(x => ({ ...x, is_active: true })))
       notify(`${blocked.length} user(s) unblocked`, 'success')
     } catch { notify('Unblock all failed', 'error') }
     finally { setBusy(null) }
@@ -67,7 +72,8 @@ export function AdminUsers() {
     setBusy(u.id + role)
     try {
       await userService.updateUser(u.id, { role })
-      setUsers(allUsers.map(x => x.id === u.id ? { ...x, role } : x))
+      const userList = Array.isArray(allUsers) ? allUsers : []
+      setUsers(userList.map(x => x.id === u.id ? { ...x, role } : x))
       notify('Role updated', 'success')
     } catch { notify('Update failed', 'error') }
     finally { setBusy(null) }
