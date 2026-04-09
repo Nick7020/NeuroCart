@@ -25,7 +25,7 @@ export function Cart() {
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
           {items.map(item => (
-            <div key={item._id} className="bg-white border border-gray-100 rounded-2xl p-4 flex gap-4 shadow-sm">
+            <div key={item.id} className="bg-white border border-gray-100 rounded-2xl p-4 flex gap-4 shadow-sm">
               <img src={item.product?.images?.[0] || 'https://placehold.co/80x80/f0f4ff/1A3263?text=P'}
                 alt={item.product?.name} className="w-20 h-20 rounded-xl object-cover bg-gray-50 flex-shrink-0 border border-gray-100" />
               <div className="flex-1 min-w-0">
@@ -33,19 +33,19 @@ export function Cart() {
                 <p className="font-bold mt-1" style={{ color: '#1A3263' }}>{formatCurrency(item.price)}</p>
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl p-1">
-                    <button onClick={() => updateItem(item._id, item.quantity - 1)} disabled={item.quantity <= 1}
+                    <button onClick={() => updateItem(item.id, item.quantity - 1)} disabled={item.quantity <= 1}
                       className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-40 text-gray-600">
                       <Minus size={12} />
                     </button>
                     <span className="w-6 text-center text-sm font-bold text-gray-800">{item.quantity}</span>
-                    <button onClick={() => updateItem(item._id, item.quantity + 1)}
+                    <button onClick={() => updateItem(item.id, item.quantity + 1)}
                       className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 rounded-lg transition-colors text-gray-600">
                       <Plus size={12} />
                     </button>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-gray-900">{formatCurrency(item.price * item.quantity)}</span>
-                    <button onClick={async () => { await removeItem(item._id); notify('Removed', 'info') }}
+                    <button onClick={async () => { await removeItem(item.id); notify('Removed', 'info') }}
                       className="p-1.5 text-gray-300 hover:text-red-400 transition-colors">
                       <Trash2 size={15} />
                     </button>

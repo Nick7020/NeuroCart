@@ -1,11 +1,15 @@
 import axios from 'axios'
 import { MOCK_PRODUCTS, MOCK_ORDERS, MOCK_ANALYTICS, MOCK_USERS, MOCK_REPORTS } from '../utils/mockData'
 
-export const MOCK_MODE = true // flip to false when backend is ready
+export const MOCK_MODE = false // flip to true to use mock data without backend
 
 let accessToken = null
 export const setAccessToken = (t) => (accessToken = t)
 export const getAccessToken = () => accessToken
+
+// ─── Notify Setter (avoids circular import with NotificationContext) ──────────
+let notifyFn = null
+export const setNotify = (fn) => { notifyFn = fn }
 
 // ─── Mock Handler (pure data, no network) ────────────────────────────────────
 function mockHandler(config) {
@@ -91,7 +95,27 @@ function mockHandler(config) {
   if (url.includes('/orders')) return { orders: MOCK_ORDERS }
 
   // ── Analytics ─────────────────────────────────────────────────────────────
-  if (url.includes('/analytics/dashboard')) return MOCK_ANALYTICS
+  if (url.includes('/analytics/dashboard')) {
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]')
+    const vendorRevenue = invoices.reduce((s, inv) => {
+      const items = inv.order?.items || []
+      return s + items.reduce((a, i) => a + i.price * i.quantity, 0) * 1.18
+    }, 0)
+    const vendorOrders = MOCK_ORDERS
+    const vendorStats = [
+      { vendorName: 'Meera Electronics', orders: 12, revenue: 284750, accepted: 10, rejected: 2 },
+      { vendorName: 'TechZone Store',    orders: 8,  revenue: 156200, accepted: 7,  rejected: 1 },
+      { vendorName: 'Fashion Hub',       orders: 15, revenue: 98500,  accepted: 13, rejected: 2 },
+      { vendorName: 'BookWorld',         orders: 6,  revenue: 12400,  accepted: 6,  rejected: 0 },
+    ]
+    return {
+      ...MOCK_ANALYTICS,
+      vendorStats,
+      vendorRevenue: vendorRevenue || vendorStats.reduce((s, v) => s + v.revenue, 0),
+      vendorOrders: vendorOrders.length,
+      totalVendors: vendorStats.length,
+    }
+  }
   if (url.includes('/analytics/reports')) return MOCK_REPORTS
   if (url.includes('/analytics/sales')) return { sales: MOCK_ANALYTICS.salesTrend }
 
@@ -128,7 +152,41 @@ function mockHandler(config) {
   }
 
   // ── Payments ──────────────────────────────────────────────────────────────
+  if (url.includes('/payments/razorpay/create-order') && method === 'post') {
+    return { razorpay_order_id: 'order_mock123', amount: 50000, currency: 'INR', key_id: 'rzp_test_mock' }
+  }
+  if (url.includes('/payments/razorpay/verify') && method === 'post') {
+    return { id: 'pay_mock_' + Date.now(), order: body.razorpay_order_id, razorpay_order_id: body.razorpay_order_id, razorpay_payment_id: body.razorpay_payment_id, razorpay_signature: body.razorpay_signature, status: 'completed', created_at: new Date().toISOString() }
+  }
   if (url.includes('/payments')) return { success: true, transactionId: 'txn_' + Date.now() }
+
+  // ── Vendor Orders ─────────────────────────────────────────────────────────
+  if (url.includes('/vendor/orders') && method === 'get') return { orders: MOCK_ORDERS }
+  if (url.match(/\/vendor\/orders\/[^/?]+\/accept/)) {
+    const id = url.split('/vendor/orders/')[1].split('/')[0]
+    const o = MOCK_ORDERS.find(o => o._id === id)
+    if (o) o.status = 'CONFIRMED'
+    return { message: 'Accepted' }
+  }
+  if (url.match(/\/vendor\/orders\/[^/?]+\/reject/)) {
+    const id = url.split('/vendor/orders/')[1].split('/')[0]
+    const o = MOCK_ORDERS.find(o => o._id === id)
+    if (o) o.status = 'CANCELLED'
+    return { message: 'Rejected' }
+  }
+
+  // ── Invoices ──────────────────────────────────────────────────────────────
+  if (url.includes('/invoices') && method === 'get') {
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]')
+    return { invoices }
+  }
+  if (url.includes('/invoices') && method === 'post') {
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]')
+    const inv = { ...JSON.parse(config.data || '{}'), _id: 'inv_' + Date.now(), createdAt: new Date().toISOString() }
+    invoices.unshift(inv)
+    sessionStorage.setItem('invoices', JSON.stringify(invoices))
+    return { invoice: inv }
+  }
 
   return { message: 'Mock OK' }
 }
@@ -147,7 +205,7 @@ function mockAdapter(config) {
 
 // ─── Axios Instance ───────────────────────────────────────────────────────────
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: '/api',
   withCredentials: true,
   ...(MOCK_MODE && { adapter: mockAdapter }),
 })
@@ -157,24 +215,39 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Only needed for real backend — 401 auto-refresh
+// Only needed for real backend — 401 auto-refresh + global error notifications
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
     if (MOCK_MODE) return Promise.reject(err)
     const original = err.config
-    if (err.response?.status === 401 && !original._retry) {
+    const status = err.response?.status
+
+    if (status === 401 && !original._retry) {
       original._retry = true
       try {
-        const { data } = await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true })
-        setAccessToken(data.accessToken)
-        original.headers.Authorization = `Bearer ${data.accessToken}`
+        const storedRefresh = localStorage.getItem('refreshToken')
+        const { data } = await axios.post('/api/auth/token/refresh', { refresh: storedRefresh }, { withCredentials: true })
+        setAccessToken(data.access)
+        if (data.refresh) localStorage.setItem('refreshToken', data.refresh)
+        original.headers.Authorization = `Bearer ${data.access}`
         return api(original)
       } catch {
         setAccessToken(null)
         window.location.href = '/login'
       }
+    } else if (status === 403) {
+      notifyFn?.('You do not have permission to perform this action.', 'error')
+    } else if (status === 404) {
+      notifyFn?.('The requested resource was not found.', 'error')
+    } else if (status === 500) {
+      notifyFn?.('A server error occurred. Please try again later.', 'error')
+    } else if (status >= 400 && status < 500) {
+      const detail = err.response?.data?.detail
+      const message = err.response?.data?.message
+      notifyFn?.(detail || message || 'An error occurred', 'error')
     }
+
     return Promise.reject(err)
   }
 )

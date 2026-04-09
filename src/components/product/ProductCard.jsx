@@ -10,8 +10,7 @@ import { useState } from 'react'
 function getTag(product) {
   if (product.discount >= 30) return { label: 'Hot Deal', bg: '#fef2f2', color: '#ef4444' }
   if (product.discount >= 15) return { label: 'Best Seller', bg: '#fffbeb', color: '#d97706' }
-  if (Number(product._id) <= 3) return { label: 'New', bg: '#f0fdf4', color: '#16a34a' }
-  return { label: 'Popular', bg: '#eff6ff', color: '#2563eb' }
+  return { label: 'New', bg: '#f0fdf4', color: '#16a34a' }
 }
 
 export function ProductCard({ product }) {
@@ -21,12 +20,14 @@ export function ProductCard({ product }) {
   const [liked, setLiked] = useState(false)
   const tag = getTag(product)
 
+  const pid = product.id || product._id
+
   const handleAdd = async (e) => {
     e.preventDefault()
     e.stopPropagation()
     setAdding(true)
     try {
-      await addItem(product._id)
+      await addItem(pid)
       notify(`${product.name} added to cart! 🛒`, 'success')
     } catch {
       notify('Failed to add to cart', 'error')
@@ -37,9 +38,9 @@ export function ProductCard({ product }) {
 
   return (
     <motion.div whileHover={{ y: -5, scale: 1.02 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}>
-      <Link to={`/products/${product._id}`}
+      <Link to={`/products/${pid}`}
         className="block bg-white rounded-2xl overflow-hidden group transition-all duration-300"
-        style={{ border: '1px solid #e8edf2', boxShadow: '0 2px 12px rgba(26,50,99,0.06)' }}
+        style={{ border: '2px solid #e8edf2', boxShadow: '0 2px 12px rgba(26,50,99,0.06)' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#1A3263'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(26,50,99,0.12)' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8edf2'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(26,50,99,0.06)' }}
       >
@@ -88,7 +89,7 @@ export function ProductCard({ product }) {
 
         {/* Info */}
         <div className="p-4">
-          <p className="text-[11px] font-semibold mb-1 uppercase tracking-wide text-blue-500">{product.category}</p>
+          <p className="text-[11px] font-semibold mb-1 uppercase tracking-wide text-blue-500">{product.category_name || product.category}</p>
           <h3 className="text-sm font-semibold text-gray-800 truncate mb-2">{product.name}</h3>
 
           <div className="flex items-center gap-1.5 mb-3">
@@ -101,12 +102,13 @@ export function ProductCard({ product }) {
           </div>
 
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex flex-col">
               <span className="text-base font-extrabold text-gray-900">{formatCurrency(product.price)}</span>
               {product.originalPrice > product.price && (
-                <span className="text-xs text-gray-400 line-through ml-1.5">{formatCurrency(product.originalPrice)}</span>
+                <span className="text-xs text-gray-400 line-through">{formatCurrency(product.originalPrice)}</span>
               )}
             </div>
+
             <motion.button onClick={handleAdd} disabled={product.stock === 0 || adding}
               whileTap={{ scale: 0.9 }}
               className="w-8 h-8 rounded-xl flex items-center justify-center transition-all disabled:opacity-50 shadow-sm"

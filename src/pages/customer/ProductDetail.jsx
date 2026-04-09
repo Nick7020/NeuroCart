@@ -7,9 +7,29 @@ import { productService } from '../../services'
 import { useCart } from '../../context/CartContext'
 import { useNotification } from '../../context/NotificationContext'
 import { ImageCarousel } from '../../components/product/ImageCarousel'
-import { RecommendationSection } from '../../components/ai/RecommendationSection'
-import { PageLoader } from '../../components/ui/Spinner'
+import { ProductCard } from '../../components/product/ProductCard'
+import { PageLoader, Spinner } from '../../components/ui/Spinner'
 import { formatCurrency } from '../../utils'
+
+function RelatedProducts({ category, currentId }) {
+  const { data, loading } = useFetch(
+    () => productService.getAll({ category }),
+    [category]
+  )
+  const products = (data?.products || data || []).filter(p => String(p._id) !== String(currentId)).slice(0, 5)
+
+  if (loading) return <div className="flex justify-center py-8"><Spinner /></div>
+  if (!products.length) return null
+
+  return (
+    <section className="mt-12">
+      <h2 className="text-xl font-bold mb-5" style={{ color: '#0f172a' }}>Related Products</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {products.map(p => <ProductCard key={p._id} product={p} />)}
+      </div>
+    </section>
+  )
+}
 
 export function ProductDetail() {
   const { id } = useParams()
@@ -22,10 +42,15 @@ export function ProductDetail() {
   const { data, loading } = useFetch(() => productService.getById(id), [id])
   const product = data?.product || data
 
+  // Normalize images: backend detail returns [{image_url, ...}], carousel needs string[]
+  const imageUrls = (product?.images || []).map(img =>
+    typeof img === 'string' ? img : img.image_url
+  ).filter(Boolean)
+
   const handleAdd = async () => {
     setAdding(true)
     try {
-      await addItem(product._id, qty)
+      await addItem(product.id, qty)
       notify(`${product.name} added to cart! 🛒`, 'success')
     } catch { notify('Failed to add', 'error') }
     finally { setAdding(false) }
@@ -41,7 +66,7 @@ export function ProductDetail() {
       </button>
 
       <div className="grid md:grid-cols-2 gap-10 mb-12">
-        <ImageCarousel images={product.images} productName={product.name} />
+        <ImageCarousel images={imageUrls} productName={product.name} />
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
           <div>
@@ -113,7 +138,7 @@ export function ProductDetail() {
         </motion.div>
       </div>
 
-      <RecommendationSection productId={id} title="🔗 Related Products" />
+      <RelatedProducts category={product.category} currentId={product._id} />
     </div>
   )
 }

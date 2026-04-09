@@ -19,9 +19,17 @@ export function Register() {
     if (form.password !== form.confirmPassword) return notify('Passwords do not match', 'error')
     setLoading(true)
     try {
-      const user = await register({ name: form.name, email: form.email, password: form.password, role: form.role, storeName: form.storeName, gstNo: form.gstNo })
+      const user = await register({
+        first_name: form.name.split(' ')[0] || form.name,
+        last_name: form.name.split(' ').slice(1).join(' ') || '',
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        shop_name: form.storeName,
+        description: form.gstNo ? `GST: ${form.gstNo}` : '',
+      })
       notify('Account created!', 'success')
-      navigate(user.role === 'vendor' ? '/vendor' : '/')
+      navigate(user.role === 'vendor' ? '/admin/vendor-dashboard' : '/')
     } catch (err) {
       notify(err?.response?.data?.message || 'Registration failed', 'error')
     } finally { setLoading(false) }
@@ -41,7 +49,7 @@ export function Register() {
         <div className="bg-white rounded-3xl p-8 shadow-sm" style={{ border: '1px solid #E2E8F0' }}>
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
-              { k: 'name',            label: 'Full Name',        type: 'text',     placeholder: 'John Doe' },
+              { k: 'name',            label: 'Full Name',        type: 'text',     placeholder: 'e.g. Rahul Sharma' },
               { k: 'email',           label: 'Email',            type: 'email',    placeholder: 'you@example.com' },
               { k: 'password',        label: 'Password',         type: 'password', placeholder: '••••••••' },
               { k: 'confirmPassword', label: 'Confirm Password', type: 'password', placeholder: '••••••••' },
