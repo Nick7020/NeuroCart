@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\services\recommendation_service.py
+# hypothesis_version: 6.151.12
+
+[0.0, 0.4, 0.6, 3600, '-co_count', 'max_sales', 'order_id', 'product_id', 'total_sales']

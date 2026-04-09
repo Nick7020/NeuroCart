@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\config\urls.py
+# hypothesis_version: 6.151.12
+
+['__debug__/', 'admin/', 'api/admin/', 'api/auth/', 'api/cart/', 'api/categories/', 'api/orders/', 'api/payments/', 'api/products/', 'api/test/', 'api/users/', 'api/vendor/', 'api/vendors/', 'message', 'orders.cart_urls', 'orders.urls', 'payments.urls', 'products.urls', 'users.profile_urls', 'users.urls', 'vendors.urls']

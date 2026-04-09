@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\services\order_service.py
+# hypothesis_version: 6.151.12
+
+['Cart is empty.', 'Cart not found.', 'cancelled', 'completed', 'confirmed', 'date', 'delivered', 'items__product', 'partially_shipped', 'pending', 'processing', 'product', 'revenue', 'shipped', 'status', 'stock', 'vendor']

@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\services\payment_service.py
+# hypothesis_version: 6.151.12
+
+['amount', 'completed', 'confirmed', 'failed', 'payment_method', 'pending', 'refunded', 'status', 'transaction_id']

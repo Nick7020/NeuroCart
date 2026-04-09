@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\cart_urls.py
+# hypothesis_version: 6.151.12
+
+['cart-clear', 'cart-detail', 'cart-item-add', 'cart-item-delete', 'cart-item-update', 'clear/', 'items/', 'items/<uuid:pk>/']

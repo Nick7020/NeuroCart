@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\cart_serializers.py
+# hypothesis_version: 6.151.12
+
+['added_at', 'cart_item', 'created_at', 'id', 'items', 'product', 'product_id', 'quantity', 'request', 'subtotal', 'total', 'updated_at']

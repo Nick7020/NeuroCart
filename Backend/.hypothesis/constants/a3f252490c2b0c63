@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\payments\migrations\0001_initial.py
+# hypothesis_version: 6.151.12
+
+['0002_initial', 'Card', 'Cash on Delivery', 'Completed', 'Failed', 'Payment', 'Pending', 'Refunded', 'UPI', 'Wallet', 'amount', 'card', 'cod', 'completed', 'created_at', 'failed', 'id', 'order', 'orders', 'orders.order', 'payment', 'payment_method', 'pending', 'refunded', 'status', 'transaction_id', 'updated_at', 'upi', 'wallet']

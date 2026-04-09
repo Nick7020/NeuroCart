@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\payments\tests.py
+# hypothesis_version: 6.151.12
+
+[200, 400, 401, 403, 404, '100.00', '250.00', '50.00', 'A test product', 'Electronics', 'Other Shop', 'Test Product', 'Test Shop', 'admin', 'admin@test.com', 'amount', 'approved', 'bitcoin', 'card', 'cod', 'completed', 'confirmed', 'customer', 'customer@test.com', 'electronics', 'failed', 'id', 'order', 'order_id', 'other@test.com', 'pass1234', 'payment-detail', 'payment-process', 'payment_method', 'pending', 'refunded', 'simulate_fail', 'status', 'transaction_id', 'upi', 'v2@test.com', 'vendor', 'vendor@test.com', 'wallet']

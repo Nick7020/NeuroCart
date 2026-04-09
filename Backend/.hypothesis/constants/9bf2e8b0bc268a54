@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\config\settings.py
+# hypothesis_version: 6.151.12
+
+[100, 3600, ',', '10/min', '127.0.0.1', 'APP_DIRS', 'AUTH_HEADER_TYPES', 'BACKEND', 'Bearer', 'CACHE_BACKEND', 'CORS_ALLOWED_ORIGINS', 'DB_ENGINE', 'DB_HOST', 'DB_NAME', 'DB_PASSWORD', 'DB_PORT', 'DB_USER', 'DEBUG', 'DIRS', 'ENGINE', 'HOST', 'LOCATION', 'MAX_PAGE_SIZE', 'NAME', 'OPTIONS', 'PAGE_SIZE', 'PASSWORD', 'PORT', 'REDIS_URL', 'SECRET_KEY', 'TIMEOUT', 'USER', 'UTC', 'analytics_app', 'anon', 'config.urls', 'context_processors', 'corsheaders', 'db.sqlite3', 'debug_toolbar', 'default', 'django.contrib.admin', 'django.contrib.auth', 'django_filters', 'en-us', 'orders', 'page_size', 'payments', 'products', 'rest_framework', 'static/', 'users', 'users.User', 'vendors']

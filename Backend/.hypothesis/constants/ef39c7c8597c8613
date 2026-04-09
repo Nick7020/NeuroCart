@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\products\category_urls.py
+# hypothesis_version: 6.151.12
+
+['<uuid:pk>/', 'category-create', 'category-list', 'category-update', 'create/']

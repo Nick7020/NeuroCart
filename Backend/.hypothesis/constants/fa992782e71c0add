@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\migrations\0001_initial.py
+# hypothesis_version: 6.151.12
+
+['Cancelled', 'Cart', 'CartItem', 'Confirmed', 'Delivered', 'Order', 'OrderItem', 'Partially Shipped', 'Pending', 'Processing', 'Refunded', 'Shipped', 'added_at', 'cancelled', 'cart', 'confirmed', 'created_at', 'delivered', 'id', 'items', 'orders.cart', 'partially_shipped', 'pending', 'processing', 'quantity', 'refunded', 'shipped', 'status', 'subtotal', 'total_amount', 'unit_price', 'updated_at', 'user']

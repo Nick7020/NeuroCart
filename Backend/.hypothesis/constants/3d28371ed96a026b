@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\users\urls.py
+# hypothesis_version: 6.151.12
+
+['auth-login', 'auth-logout', 'auth-register', 'auth-token-refresh', 'login', 'logout', 'register', 'token/refresh']

@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\analytics_app\tests.py
+# hypothesis_version: 6.151.12
+
+['123.45', '25.00', '50.00', 'A widget', 'Electronics', 'Shop2', 'Shop3', 'Test Shop', 'Widget', 'approved', 'confirmed', 'customer', 'delivered', 'pass', 'pending', 'processing', 'shipped', 'v2@test.com', 'v3@test.com', 'vendor', 'vendor@test.com']

@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\users\models.py
+# hypothesis_version: 6.151.12
+
+[100, 'Admin', 'Customer', 'Email is required', 'Vendor', 'admin', 'customer', 'email', 'is_active', 'is_staff', 'is_superuser', 'role', 'vendor']

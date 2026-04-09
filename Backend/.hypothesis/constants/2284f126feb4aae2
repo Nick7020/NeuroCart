@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\tests.py
+# hypothesis_version: 6.151.12
+
+[200, 201, 400, 401, 403, 404, 999, '0', '10.00', '15.00', '20.00', '25.00', 'A test product', 'Electronics', 'Gadget', 'Test Shop', 'Widget', 'approved', 'bitcoin', 'cancelled', 'card', 'cart-clear', 'cart-detail', 'cart-item-add', 'cart-item-delete', 'cart-item-update', 'cod', 'confirmed', 'customer', 'customer@test.com', 'delivered', 'electronics', 'items', 'order-cancel', 'order-checkout', 'other@test.com', 'pass1234', 'payment_method', 'pending', 'pk', 'product_id', 'quantity', 'shipped', 'total', 'vendor', 'vendor@test.com']

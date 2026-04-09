@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\products\urls.py
+# hypothesis_version: 6.151.12
+
+['<uuid:pk>/', '<uuid:pk>/delete/', '<uuid:pk>/reviews/', '<uuid:pk>/update/', 'product-delete', 'product-detail', 'product-list-create', 'product-trending', 'product-update', 'review-create', 'review-delete', 'review-list', 'review-update', 'trending/']

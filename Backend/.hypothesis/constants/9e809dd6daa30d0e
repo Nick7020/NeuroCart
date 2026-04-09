@@ -1,0 +1,4 @@
+# file: C:\Users\pinja\OneDrive\Desktop\NeuroCart\Backend\orders\urls.py
+# hypothesis_version: 6.151.12
+
+['<uuid:pk>/', '<uuid:pk>/cancel/', 'checkout/', 'order-cancel', 'order-checkout', 'order-detail', 'order-list', 'orders/']
