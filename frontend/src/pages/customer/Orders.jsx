@@ -9,7 +9,10 @@ import { EmptyState } from '../../components/ui/EmptyState'
 export function Orders() {
   const { data, loading } = useFetch(() => orderService.myOrders(), [])
   const raw = data?.results ?? data
-  const orders = Array.isArray(raw) ? raw : []
+  const apiOrders = Array.isArray(raw) ? raw : []
+  // Merge with locally placed orders (mock mode)
+  const localOrders = JSON.parse(sessionStorage.getItem('mockOrders') || '[]')
+  const orders = localOrders.length ? localOrders : apiOrders
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
   if (!orders.length) return (
