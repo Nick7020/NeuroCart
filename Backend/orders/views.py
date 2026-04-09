@@ -1,0 +1,143 @@
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.shortcuts import get_object_or_404
+
+from .models import Order, OrderItem
+from .serializers import (
+    CheckoutSerializer,
+    OrderListSerializer,
+    OrderDetailSerializer,
+    OrderItemSerializer,
+    OrderItemStatusUpdateSerializer,
+)
+from services import order_service
+from users.permissions import IsCustomer, IsApprovedVendor, IsAdmin, IsOrderOwner
+
+
+class CheckoutView(APIView):
+    """POST /api/orders/checkout — customer only."""
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request):
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            order = order_service.checkout(
+                user=request.user,
+                payment_method=serializer.validated_data['payment_method'],
+            )
+        except ValidationError as e:
+            return Response(
+                {'error': 'CHECKOUT_FAILED', 'details': e.message_dict if hasattr(e, 'message_dict') else e.messages},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(OrderDetailSerializer(order).data, status=status.HTTP_201_CREATED)
+
+
+class OrderListView(generics.ListAPIView):
+    """GET /api/orders — customer's own orders, paginated."""
+    serializer_class = OrderListSerializer
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get_queryset(self):
+        return (
+            Order.objects
+            .filter(user=self.request.user)
+            .prefetch_related('items')
+            .order_by('-created_at')
+        )
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    """GET /api/orders/{id} — customer (own) or admin."""
+    serializer_class = OrderDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return Order.objects.prefetch_related('items__product', 'items__vendor').all()
+        return Order.objects.prefetch_related('items__product', 'items__vendor').filter(user=user)
+
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
+        # Object-level check for customers
+        if self.request.user.role != 'admin' and obj.user != self.request.user:
+            from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
+            raise DRFPermissionDenied()
+        return obj
+
+
+class OrderCancelView(APIView):
+    """POST /api/orders/{pk}/cancel — customer only."""
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+
+        try:
+            order = order_service.cancel_order(order=order, user=request.user)
+        except PermissionDenied as e:
+            return Response({'error': 'PERMISSION_DENIED', 'message': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except ValidationError as e:
+            return Response(
+                {'error': 'CANCEL_FAILED', 'message': e.messages[0] if e.messages else str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(OrderDetailSerializer(order).data)
+
+
+class VendorOrderItemListView(generics.ListAPIView):
+    """GET /api/vendor/orders — vendor's order items, filterable by status."""
+    serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated, IsApprovedVendor]
+
+    def get_queryset(self):
+        vendor = self.request.user.vendor_profile
+        qs = (
+            OrderItem.objects
+            .filter(vendor=vendor)
+            .select_related('order', 'product', 'vendor')
+            .order_by('-order__created_at')
+        )
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+
+class VendorOrderItemStatusView(APIView):
+    """PATCH /api/vendor/orders/{item_id}/status — vendor updates item status."""
+    permission_classes = [IsAuthenticated, IsApprovedVendor]
+
+    def patch(self, request, item_id):
+        vendor = request.user.vendor_profile
+        order_item = get_object_or_404(OrderItem, pk=item_id)
+
+        serializer = OrderItemStatusUpdateSerializer(
+            data=request.data,
+            context={'order_item': order_item},
+        )
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            order_item = order_service.update_order_item_status(
+                order_item=order_item,
+                vendor=vendor,
+                new_status=serializer.validated_data['new_status'],
+            )
+        except PermissionDenied as e:
+            return Response({'error': 'PERMISSION_DENIED', 'message': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except ValidationError as e:
+            return Response(
+                {'error': 'STATUS_UPDATE_FAILED', 'message': e.messages[0] if e.messages else str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(OrderItemSerializer(order_item).data)
