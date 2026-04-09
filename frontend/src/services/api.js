@@ -148,6 +148,12 @@ function mockHandler(config) {
   }
 
   // ── Payments ──────────────────────────────────────────────────────────────
+  if (url.includes('/payments/razorpay/create-order') && method === 'post') {
+    return { razorpay_order_id: 'order_mock123', amount: 50000, currency: 'INR', key_id: 'rzp_test_mock' }
+  }
+  if (url.includes('/payments/razorpay/verify') && method === 'post') {
+    return { id: 'pay_mock_' + Date.now(), order: body.razorpay_order_id, razorpay_order_id: body.razorpay_order_id, razorpay_payment_id: body.razorpay_payment_id, razorpay_signature: body.razorpay_signature, status: 'completed', created_at: new Date().toISOString() }
+  }
   if (url.includes('/payments')) return { success: true, transactionId: 'txn_' + Date.now() }
 
   // ── Vendor Orders ─────────────────────────────────────────────────────────

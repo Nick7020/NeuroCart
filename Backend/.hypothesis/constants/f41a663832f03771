@@ -1,0 +1,4 @@
+# file: C:\Users\HP\integrating\NeuroCart\Backend\payments\models.py
+# hypothesis_version: 6.151.12
+
+[100, 256, 'Card', 'Cash on Delivery', 'Completed', 'Failed', 'Pending', 'Razorpay', 'Refunded', 'UPI', 'Wallet', 'card', 'cod', 'completed', 'failed', 'orders.Order', 'payment', 'pending', 'razorpay', 'refunded', 'upi', 'wallet']

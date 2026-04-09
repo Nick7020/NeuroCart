@@ -1,0 +1,4 @@
+# file: C:\Users\HP\integrating\NeuroCart\Backend\products\serializers.py
+# hypothesis_version: 6.151.12
+
+['@', 'average_rating', 'avg', 'category', 'category.name', 'category_name', 'children', 'comment', 'created_at', 'delivered', 'description', 'discount', 'id', 'image_url', 'images', 'is_active', 'is_primary', 'name', 'original_price', 'parent_category', 'price', 'primary_image', 'product', 'rating', 'request', 'review_count', 'reviewer_username', 'reviews', 'slug', 'stock', 'updated_at', 'vendor.id', 'vendor.shop_name', 'vendor_id', 'vendor_name']

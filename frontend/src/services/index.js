@@ -39,6 +39,8 @@ export const orderService = {
 export const paymentService = {
   initiate: (data) => api.post('/payments/process/', data),
   getByOrder: (orderId) => api.get(`/payments/${orderId}/`),
+  createRazorpayOrder: (orderId) => api.post('/payments/razorpay/create-order/', { order_id: orderId }),
+  verifyRazorpayPayment: (data) => api.post('/payments/razorpay/verify/', data),
 }
 
 export const analyticsService = {

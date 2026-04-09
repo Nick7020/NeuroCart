@@ -1,0 +1,4 @@
+# file: C:\Users\HP\integrating\NeuroCart\Backend\payments\migrations\0003_payment_razorpay_fields.py
+# hypothesis_version: 6.151.12
+
+[100, 256, 'Card', 'Cash on Delivery', 'Razorpay', 'UPI', 'Wallet', 'card', 'cod', 'payment', 'payment_method', 'payments', 'razorpay', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'upi', 'wallet']

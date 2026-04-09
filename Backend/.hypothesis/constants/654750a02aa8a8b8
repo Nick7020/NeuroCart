@@ -1,0 +1,4 @@
+# file: C:\Users\HP\integrating\NeuroCart\Backend\products\migrations\0002_product_discount_product_original_price.py
+# hypothesis_version: 6.151.12
+
+['0001_initial', 'discount', 'original_price', 'product', 'products']

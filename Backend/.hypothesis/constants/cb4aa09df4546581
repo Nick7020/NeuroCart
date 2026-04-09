@@ -1,0 +1,4 @@
+# file: C:\Users\HP\integrating\NeuroCart\Backend\payments\migrations\0002_payment_razorpay_transfer_id_vendor_payout_status.py
+# hypothesis_version: 6.151.12
+
+[100, '0001_initial', 'payment', 'payments', 'razorpay_transfer_id', 'vendor_payout_status']

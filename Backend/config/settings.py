@@ -181,6 +181,22 @@ SIMPLE_JWT = {
 }
 
 # Django REST Framework
+# ---------------------------------------------------------------------------
+# Razorpay
+# ---------------------------------------------------------------------------
+from django.core.exceptions import ImproperlyConfigured
+
+RAZORPAY_MODE       = config('RAZORPAY_MODE', default='test')
+RAZORPAY_KEY_ID     = config('RAZORPAY_KEY_ID', default='')
+RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
+RAZORPAY_WEBHOOK_SECRET = config('RAZORPAY_WEBHOOK_SECRET', default='')
+
+if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
+    raise ImproperlyConfigured(
+        "RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be set in your environment. "
+        "Get them from https://dashboard.razorpay.com/app/keys"
+    )
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -200,4 +216,37 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+}
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stdout',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'payments': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'WARNING',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }
