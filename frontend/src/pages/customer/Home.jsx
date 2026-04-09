@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { SlidersHorizontal, TrendingUp } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
@@ -17,10 +17,10 @@ const CATEGORIES = ['All', 'Electronics', 'Sports', 'Clothing', 'Books', 'Home',
 
 const PRICE_RANGES = [
   { label: 'All',        min: 0,     max: undefined },
-  { label: 'Under ₹1K', min: 0,     max: 1000 },
-  { label: '₹1K–₹10K',  min: 1000,  max: 10000 },
-  { label: '₹10K–₹50K', min: 10000, max: 50000 },
-  { label: '₹50K+',     min: 50000, max: undefined },
+  { label: 'Under Ôé╣1K', min: 0,     max: 1000 },
+  { label: 'Ôé╣1KÔÇôÔé╣10K',  min: 1000,  max: 10000 },
+  { label: 'Ôé╣10KÔÇôÔé╣50K', min: 10000, max: 50000 },
+  { label: 'Ôé╣50K+',     min: 50000, max: undefined },
 ]
 
 export function Home() {
@@ -99,8 +99,8 @@ export function Home() {
               <select value={sort} onChange={e => setSort(e.target.value)}
                 className="bg-transparent text-sm text-gray-300 focus:outline-none cursor-pointer">
                 <option value="default">Default</option>
-                <option value="price-asc">Price ↑</option>
-                <option value="price-desc">Price ↓</option>
+                <option value="price-asc">Price Ôåæ</option>
+                <option value="price-desc">Price Ôåô</option>
                 <option value="discount">Best Discount</option>
               </select>
             </div>
@@ -134,11 +134,11 @@ export function Home() {
       </section>
 
       {/* Trending Section */}
-      <RecommendationSection endpoint="trending" title="🔥 Trending Now" />
+      <RecommendationSection endpoint="trending" title="­ƒöÑ Trending Now" />
 
       {/* Personalised Recommendations */}
       {user && (
-        <RecommendationSection endpoint="user" title="✨ Recommended for You" />
+        <RecommendationSection endpoint="user" title="Ô£¿ Recommended for You" />
       )}
     </div>
   )

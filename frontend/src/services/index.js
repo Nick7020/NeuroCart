@@ -1,4 +1,4 @@
-import api from './api'
+﻿import api from './api'
 
 export const authService = {
   login: (data) => api.post('/auth/login', data),
@@ -82,7 +82,7 @@ export const adminService = {
   getOrders: (params) => api.get('/admin/orders/', { params }),
 }
 
-// No backend implementation yet — frontend/mock only
+// No backend implementation yet ÔÇö frontend/mock only
 export const aiService = {
   chat: (data) => api.post('/ai/chat', data),
   recommendations: (params) => api.get('/ai/recommendations', { params }),

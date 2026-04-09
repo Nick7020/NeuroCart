@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, ArrowLeft, Star, Shield, Truck, RotateCcw, Plus, Minus } from 'lucide-react'
@@ -31,7 +31,7 @@ export function ProductDetail() {
     setAdding(true)
     try {
       await addItem(product.id, qty)
-      notify(`${product.name} added to cart! 🛒`, 'success')
+      notify(`${product.name} added to cart! ­ƒøÆ`, 'success')
     } catch { notify('Failed to add', 'error') }
     finally { setAdding(false) }
   }
