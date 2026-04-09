@@ -49,7 +49,7 @@ export function Register() {
         <div className="bg-white rounded-3xl p-8 shadow-sm" style={{ border: '1px solid #E2E8F0' }}>
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
-              { k: 'name',            label: 'Full Name',        type: 'text',     placeholder: 'John Doe' },
+              { k: 'name',            label: 'Full Name',        type: 'text',     placeholder: 'e.g. Rahul Sharma' },
               { k: 'email',           label: 'Email',            type: 'email',    placeholder: 'you@example.com' },
               { k: 'password',        label: 'Password',         type: 'password', placeholder: '••••••••' },
               { k: 'confirmPassword', label: 'Confirm Password', type: 'password', placeholder: '••••••••' },

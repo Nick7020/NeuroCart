@@ -20,7 +20,7 @@ export function VendorLayout() {
   const handleLogout = async () => { await logout(); navigate('/login') }
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#ffedce' }}>
+    <div className="min-h-screen flex" style={{ background: '#f4f6f9' }}>
       <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-white border-r border-gray-100 flex flex-col transition-all duration-300 shadow-sm flex-shrink-0`}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
           {!collapsed && <img src={logo} alt="NeuroCart" className="h-8 w-auto object-contain" />}
