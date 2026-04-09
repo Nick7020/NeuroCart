@@ -28,7 +28,7 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 100%)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 100%)' }}>
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="text-center mb-8">
           <img src={logo} alt="NeuroCart" className="h-14 w-auto object-contain mx-auto mb-4" />
@@ -84,6 +84,9 @@ export function Login() {
           </div>
         </div>
       </motion.div>
+      <footer style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: '#6b7280' }}>
+        © 2026 NeuroCart. All rights reserved.
+      </footer>
     </div>
   )
 }
