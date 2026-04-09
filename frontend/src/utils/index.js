@@ -6,13 +6,13 @@ export const formatDate = (date) =>
 
 export const truncate = (str, n = 60) => str?.length > n ? str.slice(0, n) + '…' : str
 
-export const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
+export const ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
 
 export const STATUS_COLORS = {
-  PENDING: 'bg-yellow-500/20 text-yellow-400',
-  CONFIRMED: 'bg-blue-500/20 text-blue-400',
-  PROCESSING: 'bg-purple-500/20 text-purple-400',
-  SHIPPED: 'bg-indigo-500/20 text-indigo-400',
-  DELIVERED: 'bg-green-500/20 text-green-400',
-  CANCELLED: 'bg-red-500/20 text-red-400',
+  pending: 'bg-yellow-500/20 text-yellow-400',
+  confirmed: 'bg-blue-500/20 text-blue-400',
+  processing: 'bg-purple-500/20 text-purple-400',
+  shipped: 'bg-indigo-500/20 text-indigo-400',
+  delivered: 'bg-green-500/20 text-green-400',
+  cancelled: 'bg-red-500/20 text-red-400',
 }

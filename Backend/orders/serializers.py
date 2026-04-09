@@ -31,7 +31,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'total_amount', 'status', 'items', 'created_at', 'updated_at')
+        fields = ('id', 'total_amount', 'status', 'shipping_address', 'items', 'created_at', 'updated_at')
         read_only_fields = fields
 
 
@@ -39,7 +39,8 @@ class CheckoutSerializer(serializers.Serializer):
     """Input serializer for checkout — validates payment_method."""
     PAYMENT_METHOD_CHOICES = ['card', 'upi', 'wallet', 'cod']
 
-    payment_method = serializers.ChoiceField(choices=PAYMENT_METHOD_CHOICES)
+    payment_method   = serializers.ChoiceField(choices=PAYMENT_METHOD_CHOICES)
+    shipping_address = serializers.DictField(required=False, allow_null=True, default=None)
 
 
 class OrderItemStatusUpdateSerializer(serializers.Serializer):

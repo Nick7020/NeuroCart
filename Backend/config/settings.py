@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY: str = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG: bool = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -75,7 +75,7 @@ if DEBUG:
     MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
     INTERNAL_IPS = ['127.0.0.1']
 
-CORS_ALLOWED_ORIGINS = config(
+CORS_ALLOWED_ORIGINS: list[str] = config(
     'CORS_ALLOWED_ORIGINS',
     default='http://localhost:3000,http://localhost:5173',
 ).split(',')
@@ -83,7 +83,7 @@ CORS_ALLOWED_ORIGINS = config(
 CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = "config.urls"
 
-TEMPLATES = [
+TEMPLATES: list[dict[str, object]] = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
@@ -104,7 +104,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
+DATABASES: dict[str, dict[str, str]] = {
     "default": {
         "ENGINE": config('DB_ENGINE', default='django.db.backends.sqlite3'),
         "NAME": config('DB_NAME', default=str(BASE_DIR / "db.sqlite3")),
@@ -160,7 +160,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cache
 # Use LocMemCache for development; override CACHE_BACKEND and REDIS_URL in production.
-CACHES = {
+CACHES: dict[str, dict[str, object]] = {
     "default": {
         "BACKEND": config(
             "CACHE_BACKEND",
@@ -172,7 +172,7 @@ CACHES = {
 }
 
 # JWT Configuration
-SIMPLE_JWT = {
+SIMPLE_JWT: dict[str, object] = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
@@ -181,6 +181,7 @@ SIMPLE_JWT = {
 }
 
 # Django REST Framework
+<<<<<<< HEAD
 # ---------------------------------------------------------------------------
 # Razorpay
 # ---------------------------------------------------------------------------
@@ -198,6 +199,9 @@ if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     )
 
 REST_FRAMEWORK = {
+=======
+REST_FRAMEWORK: dict[str, object] = {
+>>>>>>> ddd228f5d269be9475543dd5a483de8a3f8a2050
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

@@ -1,12 +1,11 @@
 """
 Order service — checkout, stock validation, order splitting, status aggregation.
 """
-from decimal import Decimal
 from django.db import transaction
 from django.core.exceptions import PermissionDenied, ValidationError
 
 
-def checkout(user, payment_method):
+def checkout(user, payment_method, shipping_address=None):
     """
     Full atomic checkout flow with select_for_update.
     Returns the created Order.
@@ -49,20 +48,18 @@ def checkout(user, payment_method):
         if errors:
             raise ValidationError(errors)
 
-        # Calculate total
         total_amount = sum(
             products_qs[item.product_id].price * item.quantity
             for item in cart_items
         )
 
-        # Create Order
         order = Order.objects.create(
             user=user,
             total_amount=total_amount,
             status='pending',
+            shipping_address=shipping_address,
         )
 
-        # Create OrderItems and decrement stock
         for item in cart_items:
             product = products_qs[item.product_id]
             subtotal = product.price * item.quantity
@@ -77,10 +74,8 @@ def checkout(user, payment_method):
             product.stock -= item.quantity
             product.save(update_fields=['stock'])
 
-        # Clear cart
         cart.items.all().delete()
 
-        # Create pending Payment record
         try:
             from payments.models import Payment
             Payment.objects.create(
@@ -90,7 +85,7 @@ def checkout(user, payment_method):
                 payment_method=payment_method,
             )
         except Exception:
-            pass  # Payment model may not be migrated yet (Task 7)
+            pass  # Payment model may not be migrated yet
 
     return order
 
@@ -106,7 +101,7 @@ def cancel_order(order, user):
 
     if order.status not in ('pending', 'confirmed'):
         raise ValidationError(
-            f"Order cannot be cancelled. "
+            "Order cannot be cancelled. "
             "Only pending or confirmed orders can be cancelled."
         )
 
@@ -121,7 +116,6 @@ def cancel_order(order, user):
         order.status = 'cancelled'
         order.save(update_fields=['status'])
 
-        # Refund payment if it was completed
         try:
             payment = order.payment
             if payment.status == 'completed':
@@ -155,7 +149,7 @@ def aggregate_order_status(order):
     if 'processing' in statuses:
         return 'confirmed'
 
-    return order.status  # no change
+    return order.status
 
 
 def update_order_item_status(order_item, vendor, new_status):
@@ -192,6 +186,9 @@ def update_order_item_status(order_item, vendor, new_status):
             order.status = new_order_status
             order.save(update_fields=['status'])
 
+        if new_status == 'processing':
+            create_invoice(order_item)
+
         if new_status == 'delivered':
             create_sales_record(order_item)
 
@@ -214,3 +211,33 @@ def create_sales_record(order_item):
             'date': timezone.now().date(),
         }
     )
+
+
+def create_invoice(order_item):
+    """
+    Called when an OrderItem status transitions to processing.
+    Creates exactly one Invoice per (order, vendor) pair, with a unique
+    invoice_number in the format INV-{YYYY}-{count:06d}.
+    Uses select_for_update to prevent duplicate invoice numbers.
+    """
+    from orders.models import Invoice
+    from django.utils import timezone
+
+    year = timezone.now().year
+    vendor = order_item.vendor
+    order = order_item.order
+
+    # Avoid creating a duplicate invoice for the same order+vendor
+    if Invoice.objects.filter(order=order, vendor=vendor).exists():
+        return
+
+    with transaction.atomic():
+        # Lock to prevent concurrent invoice number collisions
+        count = Invoice.objects.select_for_update().count()
+        invoice_number = f"INV-{year}-{count + 1:06d}"
+        Invoice.objects.create(
+            order=order,
+            vendor=vendor,
+            invoice_number=invoice_number,
+            total_amount=order_item.subtotal,
+        )

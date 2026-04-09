@@ -99,10 +99,10 @@ export function Checkout() {
 
     // Non-Razorpay flow
     try {
-      const { data } = await orderService.create({ address, paymentMethod: payMethod, items })
+      const { data } = await orderService.create({ payment_method: payMethod, shipping_address: address })
       await clearCart()
       notify('Order placed successfully! 🎉', 'success')
-      navigate(`/orders/${data.order._id}`)
+      navigate(data.id ? `/orders/${data.id}` : '/orders')
     } catch (err) {
       notify(err?.response?.data?.message || 'Order failed', 'error')
     } finally { setLoading(false) }

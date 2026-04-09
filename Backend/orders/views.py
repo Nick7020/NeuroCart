@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
 from django.db.models import Count, Prefetch
 
-from .models import Order, OrderItem
+from .models import Order, OrderItem, Invoice
 from .serializers import (
     CheckoutSerializer,
     OrderListSerializer,
@@ -14,6 +14,7 @@ from .serializers import (
     OrderItemSerializer,
     OrderItemStatusUpdateSerializer,
 )
+from .invoice_serializers import InvoiceSerializer
 from services import order_service
 from users.permissions import IsCustomer, IsApprovedVendor, IsAdmin, IsOrderOwner
 
@@ -30,6 +31,7 @@ class CheckoutView(APIView):
             order = order_service.checkout(
                 user=request.user,
                 payment_method=serializer.validated_data['payment_method'],
+                shipping_address=serializer.validated_data.get('shipping_address'),
             )
         except ValidationError as e:
             return Response(
@@ -61,7 +63,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         items_qs = OrderItem.objects.select_related('product', 'vendor')
-        return Order.objects.select_related('user', 'payment').prefetch_related(
+        return Order.objects.select_related('user').prefetch_related(
             Prefetch('items', queryset=items_qs)
         )
 
@@ -119,7 +121,7 @@ class VendorOrderItemStatusView(APIView):
 
     def patch(self, request, item_id):
         vendor = request.user.vendor_profile
-        order_item = get_object_or_404(OrderItem, pk=item_id)
+        order_item = get_object_or_404(OrderItem, pk=item_id, vendor=vendor)
 
         serializer = OrderItemStatusUpdateSerializer(
             data=request.data,
@@ -142,3 +144,44 @@ class VendorOrderItemStatusView(APIView):
             )
 
         return Response(OrderItemSerializer(order_item).data)
+
+
+class InvoiceListView(generics.ListAPIView):
+    """GET /api/invoices/ — admin-only, paginated list of all invoices."""
+    serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_queryset(self):
+        return (
+            Invoice.objects
+            .select_related('order', 'vendor')
+            .prefetch_related('order__items__product', 'order__items__vendor')
+            .order_by('-issued_at')
+        )
+
+
+class InvoiceDetailView(generics.RetrieveAPIView):
+    """GET /api/invoices/{pk}/ — admin or the owning vendor."""
+    serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Invoice.objects.select_related('order', 'vendor').prefetch_related(
+            'order__items__product', 'order__items__vendor'
+        )
+
+    def get_object(self):
+        invoice = get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
+        user = self.request.user
+        if user.role == 'admin':
+            return invoice
+        # Approved vendors can only see their own invoices
+        if user.role == 'vendor':
+            try:
+                vendor_profile = user.vendor_profile
+                if invoice.vendor_id == vendor_profile.id:
+                    return invoice
+            except Exception:
+                pass
+        from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
+        raise DRFPermissionDenied("You do not have permission to view this invoice.")
