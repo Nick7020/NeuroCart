@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { MOCK_PRODUCTS, MOCK_ORDERS, MOCK_ANALYTICS, MOCK_USERS, MOCK_REPORTS } from '../utils/mockData'
 
-export const MOCK_MODE = true // flip to false when backend is ready
+export const MOCK_MODE = false // flip to true to use mock data without backend
 
 let accessToken = null
 export const setAccessToken = (t) => (accessToken = t)
@@ -195,7 +195,7 @@ function mockAdapter(config) {
 
 // ─── Axios Instance ───────────────────────────────────────────────────────────
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: '/api',
   withCredentials: true,
   ...(MOCK_MODE && { adapter: mockAdapter }),
 })
@@ -214,9 +214,11 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true
       try {
-        const { data } = await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true })
-        setAccessToken(data.accessToken)
-        original.headers.Authorization = `Bearer ${data.accessToken}`
+        const storedRefresh = localStorage.getItem('refreshToken')
+        const { data } = await axios.post('/api/auth/token/refresh', { refresh: storedRefresh }, { withCredentials: true })
+        setAccessToken(data.access)
+        if (data.refresh) localStorage.setItem('refreshToken', data.refresh)
+        original.headers.Authorization = `Bearer ${data.access}`
         return api(original)
       } catch {
         setAccessToken(null)
