@@ -1,0 +1,127 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useCart } from '../../context/CartContext'
+import { useNotification } from '../../context/NotificationContext'
+import { orderService } from '../../services'
+import { formatCurrency } from '../../utils'
+import { Spinner } from '../../components/ui/Spinner'
+import { MapPin, CreditCard, Smartphone, Banknote } from 'lucide-react'
+
+const PAYMENT_METHODS = [
+  { id: 'card', label: 'Credit / Debit Card', icon: <CreditCard size={18} /> },
+  { id: 'upi',  label: 'UPI',                 icon: <Smartphone size={18} /> },
+  { id: 'cod',  label: 'Cash on Delivery',    icon: <Banknote size={18} /> },
+]
+
+export function Checkout() {
+  const { items, total, clearCart } = useCart()
+  const { notify } = useNotification()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [payMethod, setPayMethod] = useState('card')
+  const [address, setAddress] = useState({ name: '', phone: '', street: '', city: '', state: '', pincode: '' })
+
+  const tax = total * 0.18
+  const grandTotal = total + tax
+  const set = (k) => (e) => setAddress({ ...address, [k]: e.target.value })
+
+  const handleOrder = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const { data } = await orderService.create({ address, paymentMethod: payMethod, items })
+      await clearCart()
+      notify('Order placed successfully! 🎉', 'success')
+      navigate(`/orders/${data.order._id}`)
+    } catch (err) {
+      notify(err?.response?.data?.message || 'Order failed', 'error')
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-extrabold text-gray-900 mb-8">Checkout</h1>
+      <form onSubmit={handleOrder} className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Address */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-5">
+              <MapPin size={18} style={{ color: '#1A3263' }} />
+              <h2 className="font-bold text-gray-900">Delivery Address</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { k: 'name',    label: 'Full Name',       placeholder: 'John Doe' },
+                { k: 'phone',   label: 'Phone',           placeholder: '+91 9876543210' },
+                { k: 'street',  label: 'Street Address',  placeholder: '123 Main St', full: true },
+                { k: 'city',    label: 'City',            placeholder: 'Mumbai' },
+                { k: 'state',   label: 'State',           placeholder: 'Maharashtra' },
+                { k: 'pincode', label: 'Pincode',         placeholder: '400001' },
+              ].map(({ k, label, placeholder, full }) => (
+                <div key={k} className={full ? 'sm:col-span-2' : ''}>
+                  <label className="block text-sm font-semibold mb-1.5 text-gray-700">{label}</label>
+                  <input required value={address[k]} onChange={set(k)} placeholder={placeholder} className="input" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Payment */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-5">
+              <CreditCard size={18} style={{ color: '#1A3263' }} />
+              <h2 className="font-bold text-gray-900">Payment Method</h2>
+            </div>
+            <div className="space-y-3">
+              {PAYMENT_METHODS.map(m => (
+                <label key={m.id} className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${payMethod === m.id ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}>
+                  <input type="radio" name="payment" value={m.id} checked={payMethod === m.id} onChange={() => setPayMethod(m.id)} className="accent-blue-600" />
+                  <span style={{ color: '#1A3263' }}>{m.icon}</span>
+                  <span className="font-semibold text-gray-700">{m.label}</span>
+                </label>
+              ))}
+            </div>
+            {payMethod === 'card' && (
+              <div className="mt-4 space-y-3">
+                <input className="input" placeholder="Card Number" maxLength={19} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input className="input" placeholder="MM/YY" />
+                  <input className="input" placeholder="CVV" maxLength={3} />
+                </div>
+              </div>
+            )}
+            {payMethod === 'upi' && <input className="input mt-4" placeholder="UPI ID (e.g. name@upi)" />}
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-6 h-fit sticky top-24 shadow-sm">
+          <h2 className="font-bold text-gray-900 mb-5">Order Summary</h2>
+          <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+            {items.map(item => (
+              <div key={item._id} className="flex justify-between text-sm text-gray-500">
+                <span className="truncate mr-2">{item.product?.name} × {item.quantity}</span>
+                <span className="flex-shrink-0">{formatCurrency(item.price * item.quantity)}</span>
+              </div>
+            ))}
+          </div>
+          <hr className="border-gray-100 mb-4" />
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatCurrency(total)}</span></div>
+            <div className="flex justify-between text-gray-500"><span>GST (18%)</span><span>{formatCurrency(tax)}</span></div>
+            <div className="flex justify-between text-gray-500"><span>Shipping</span><span className="text-green-600 font-medium">Free</span></div>
+            <hr className="border-gray-100" />
+            <div className="flex justify-between font-extrabold text-lg text-gray-900">
+              <span>Total</span>
+              <span style={{ color: '#1A3263' }}>{formatCurrency(grandTotal)}</span>
+            </div>
+          </div>
+          <button type="submit" disabled={loading || !items.length} className="btn-primary w-full mt-6 py-3 text-base">
+            {loading ? <Spinner size="sm" /> : `Place Order ${formatCurrency(grandTotal)}`}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}

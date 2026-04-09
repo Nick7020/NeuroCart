@@ -1,318 +1,235 @@
-# Requirements Document
+# NeuroCart Backend — Requirements
 
-## Introduction
+## Overview
 
-NeuroCart is a production-grade, AI-powered multi-vendor e-commerce platform built with Django and Django REST Framework. The platform supports three user roles — customers, vendors, and administrators — and provides a complete commerce lifecycle including product discovery, cart management, multi-vendor checkout, payment processing, purchase-verified reviews, and AI-driven recommendations. The system is designed to operate at Amazon/Flipkart scale with strict correctness guarantees around stock management, payment integrity, and order consistency.
-
-## Glossary
-
-- **System**: The NeuroCart backend API
-- **User**: Any authenticated account in the system
-- **Customer**: A User with role=customer who browses and purchases products
-- **Vendor**: A User with role=vendor who lists and sells products
-- **Admin**: A User with role=admin who manages the platform
-- **VendorProfile**: The extended profile record associated with a Vendor user
-- **Product**: A sellable item listed by a Vendor
-- **Cart**: A persistent shopping basket associated with a Customer
-- **CartItem**: A single product-quantity entry within a Cart
-- **Order**: A confirmed purchase record created at checkout
-- **OrderItem**: A single product-quantity-vendor entry within an Order
-- **Payment**: A financial transaction record linked to an Order
-- **Review**: A rating and comment left by a Customer for a purchased Product
-- **SalesRecord**: An analytics record capturing revenue and volume data
-- **JWT**: JSON Web Token used for stateless authentication
-- **RBAC**: Role-Based Access Control
-- **PBT**: Property-Based Testing
-- **Hypothesis**: The Python property-based testing library used for PBT
-- **select_for_update**: A database-level row lock used to prevent race conditions
-- **Co-occurrence**: Two products appearing together in the same order
+NeuroCart is a production-grade, AI-powered multi-vendor e-commerce platform built with Django and Django REST Framework. It supports customers browsing and purchasing products from multiple vendors in a single checkout, vendors managing their storefronts, and admins overseeing the entire marketplace.
 
 ---
 
-## Requirements
+## 1. Authentication & User Management
 
-### Requirement 1: User Authentication and Account Management
+### User Stories
 
-**User Story:** As a visitor, I want to register and authenticate securely, so that I can access role-appropriate features of the platform.
+- As a new user, I want to register with my email and password so I can access the platform.
+- As a registered user, I want to log in and receive a JWT token so I can make authenticated requests.
+- As an authenticated user, I want to refresh my access token so I stay logged in without re-entering credentials.
+- As a user, I want to view and update my profile information.
+- As an admin, I want to assign roles to users so I can control access levels.
 
-#### Acceptance Criteria
+### Acceptance Criteria
 
-1. WHEN a visitor submits a valid email, password, and role to `/api/auth/register`, THE System SHALL create a new User account and return a 201 response with JWT access and refresh tokens.
-2. WHEN a visitor submits a duplicate email to `/api/auth/register`, THE System SHALL return a 400 response with a descriptive validation error.
-3. WHEN a user submits valid credentials to `/api/auth/login`, THE System SHALL return a 200 response containing a JWT access token (1-hour expiry) and a refresh token (7-day expiry).
-4. WHEN a user submits invalid credentials to `/api/auth/login`, THE System SHALL return a 401 response.
-5. WHEN a user submits a valid refresh token to `/api/auth/token/refresh`, THE System SHALL return a new access token.
-6. WHEN a user submits an expired or invalid refresh token to `/api/auth/token/refresh`, THE System SHALL return a 401 response.
-7. WHEN an authenticated user calls `POST /api/auth/logout`, THE System SHALL blacklist the provided refresh token and return a 200 response.
-8. THE User model SHALL use email as the primary login identifier instead of username.
-9. THE User model SHALL store a role field with exactly three valid values: customer, vendor, or admin.
-10. WHEN a user submits a password shorter than 8 characters during registration, THE System SHALL return a 400 response with a validation error.
-
----
-
-### Requirement 2: User Profile Management
-
-**User Story:** As an authenticated user, I want to view and update my profile, so that I can keep my account information current.
-
-#### Acceptance Criteria
-
-1. WHEN an authenticated user calls `GET /api/users/me`, THE System SHALL return the user's profile data including email, first name, last name, and role.
-2. WHEN an authenticated user calls `PUT /api/users/me` with valid data, THE System SHALL update the user's profile and return the updated record.
-3. WHEN an unauthenticated request is made to `/api/users/me`, THE System SHALL return a 401 response.
-4. WHILE a user is authenticated, THE System SHALL prevent the user from modifying their own role field via the profile endpoint.
+1.1 Registration requires a unique email, password (min 8 chars), and role (customer or vendor).
+1.2 Passwords are hashed using Django's built-in PBKDF2 hasher; plaintext passwords are never stored.
+1.3 Login returns an access token (1-hour expiry) and a refresh token (7-day expiry).
+1.4 Token refresh endpoint accepts a valid refresh token and returns a new access token.
+1.5 Unauthenticated requests to protected endpoints return HTTP 401.
+1.6 Users can only update their own profile; admins can update any profile.
+1.7 Role field is immutable after registration except by admin.
+1.8 Inactive users (is_active=False) cannot log in.
 
 ---
 
-### Requirement 3: Vendor Registration and Profile Management
+## 2. Vendor System
 
-**User Story:** As a vendor, I want to register my shop and manage my vendor profile, so that I can sell products on the platform.
+### User Stories
 
-#### Acceptance Criteria
+- As a vendor, I want to register my shop so I can start selling products.
+- As a vendor, I want to view my dashboard showing total sales, orders, and top products.
+- As an admin, I want to approve or reject vendor applications so only legitimate sellers operate.
+- As a customer, I want to view a vendor's public profile and rating.
 
-1. WHEN a user with role=vendor calls `POST /api/vendors/register` with a valid shop_name, THE System SHALL create a VendorProfile with verification_status=pending and return a 201 response.
-2. WHEN a vendor attempts to register a second VendorProfile, THE System SHALL return a 400 response.
-3. WHEN any user calls `GET /api/vendors/{id}`, THE System SHALL return the vendor's public profile including shop_name, rating, and verification_status.
-4. WHEN an authenticated vendor calls `GET /api/vendor/dashboard`, THE System SHALL return the vendor's own profile, recent orders, and summary statistics.
-5. WHEN an authenticated vendor calls `PUT /api/vendor/dashboard` with valid data, THE System SHALL update the vendor's shop_name and description.
-6. IF a non-vendor user attempts to access `/api/vendor/dashboard`, THEN THE System SHALL return a 403 response.
+### Acceptance Criteria
 
----
-
-### Requirement 4: Admin Vendor Verification
-
-**User Story:** As an admin, I want to approve or reject vendor applications, so that I can maintain platform quality.
-
-#### Acceptance Criteria
-
-1. WHEN an admin calls `GET /api/admin/vendors`, THE System SHALL return a paginated list of all VendorProfiles with their verification_status.
-2. WHEN an admin calls `PATCH /api/admin/vendors/{id}/verify` with status=approved, THE System SHALL update the VendorProfile verification_status to approved.
-3. WHEN an admin calls `PATCH /api/admin/vendors/{id}/verify` with status=rejected, THE System SHALL update the VendorProfile verification_status to rejected.
-4. IF a non-admin user attempts to access `/api/admin/vendors`, THEN THE System SHALL return a 403 response.
-5. WHILE a vendor's verification_status is pending or rejected, THE System SHALL prevent that vendor from creating new products.
+2.1 A user with role=vendor can create a VendorProfile with shop_name and description.
+2.2 Newly created vendor profiles have verification_status=pending by default.
+2.3 Only admin can change verification_status to approved or rejected.
+2.4 Only approved vendors can create or update products.
+2.5 Vendor dashboard returns: total revenue, total orders, order item count, top 5 products by revenue.
+2.6 Vendor rating is the average of all ratings across all their products' reviews.
+2.7 A user can only have one VendorProfile.
+2.8 Rejected vendors cannot list products but can re-apply (admin resets to pending).
 
 ---
 
-### Requirement 5: Category Management
+## 3. Product & Category System
 
-**User Story:** As an admin, I want to manage product categories, so that products are organized for easy discovery.
+### User Stories
 
-#### Acceptance Criteria
+- As a vendor, I want to create, update, and delete my products so I can manage my catalog.
+- As a customer, I want to browse products filtered by category, price range, and vendor.
+- As a customer, I want to search products by name or description.
+- As an admin, I want to manage product categories including nested sub-categories.
 
-1. WHEN any user calls `GET /api/categories`, THE System SHALL return the full category tree including parent-child relationships.
-2. WHEN an admin calls `POST /api/categories` with a valid name, THE System SHALL create a new category and return a 201 response.
-3. WHERE a parent category is specified, THE System SHALL associate the new category as a child of the specified parent.
-4. IF a non-admin user attempts to create a category, THEN THE System SHALL return a 403 response.
-5. THE Category model SHALL support self-referential parent-child relationships to arbitrary depth.
+### Acceptance Criteria
 
----
-
-### Requirement 6: Product Management
-
-**User Story:** As a vendor, I want to create and manage my product listings, so that customers can discover and purchase my products.
-
-#### Acceptance Criteria
-
-1. WHEN an approved vendor calls `POST /api/products` with valid product data, THE System SHALL create a Product associated with that vendor and return a 201 response.
-2. WHEN an approved vendor calls `PUT /api/products/{id}` for their own product, THE System SHALL update the product and return the updated record.
-3. WHEN an approved vendor calls `DELETE /api/products/{id}` for their own product, THE System SHALL soft-delete the product by setting is_active=False.
-4. IF a vendor attempts to modify a product they do not own, THEN THE System SHALL return a 403 response.
-5. WHEN any user calls `GET /api/products`, THE System SHALL return a paginated list of active products with support for filtering by category, price range, and vendor.
-6. WHEN any user calls `GET /api/products/{id}`, THE System SHALL return the full product detail including images, vendor info, and average rating.
-7. WHEN an authenticated vendor calls `GET /api/vendor/products`, THE System SHALL return only that vendor's own products including inactive ones.
-8. THE Product model SHALL enforce that stock quantity is never stored as a negative integer.
-9. WHEN a product search query is provided, THE System SHALL filter products by name and description using case-insensitive matching.
-10. THE System SHALL return products in pages of 20 items per page by default.
+3.1 Categories support a self-referential parent_category field for unlimited nesting depth.
+3.2 Products have: name, description, price (positive decimal), stock (non-negative integer), category, is_active, created_at, updated_at.
+3.3 Vendors can only create/update/delete their own products.
+3.4 Inactive products (is_active=False) are hidden from public listings but visible to the owning vendor.
+3.5 Product listings support filtering by: category (including sub-categories), price_min, price_max, vendor_id, in_stock (boolean).
+3.6 Product listings support full-text search on name and description fields.
+3.7 All product list endpoints are paginated (default 20 items/page, max 100).
+3.8 Stock cannot be set to a negative value via API.
+3.9 Products support multiple images; one image can be marked as primary.
+3.10 Deleting a product with existing order items soft-deletes (is_active=False) rather than hard-deletes.
 
 ---
 
-### Requirement 7: Product Images
+## 4. Cart System
 
-**User Story:** As a vendor, I want to upload multiple images for my products, so that customers can see what they are buying.
+### User Stories
 
-#### Acceptance Criteria
+- As a customer, I want to add products to my cart so I can purchase them later.
+- As a customer, I want to update item quantities or remove items from my cart.
+- As a customer, I want to see my cart total before checkout.
 
-1. WHEN a vendor creates or updates a product, THE System SHALL accept multiple image uploads and associate them with the product via the ProductImage model.
-2. THE ProductImage model SHALL store an image URL and an is_primary flag.
-3. WHEN a product is retrieved, THE System SHALL include all associated images in the response.
+### Acceptance Criteria
 
----
-
-### Requirement 8: Cart Management
-
-**User Story:** As a customer, I want to manage a persistent shopping cart, so that I can collect items before purchasing.
-
-#### Acceptance Criteria
-
-1. THE System SHALL automatically create a Cart for each new Customer user upon registration.
-2. WHEN an authenticated customer calls `GET /api/cart`, THE System SHALL return the cart contents including all CartItems with product details and the calculated total.
-3. WHEN an authenticated customer calls `POST /api/cart/items` with a valid product_id and quantity, THE System SHALL add the item to the cart or increment the quantity if the item already exists.
-4. IF a customer attempts to add a product with quantity exceeding available stock, THEN THE System SHALL return a 400 response with a stock availability error.
-5. WHEN an authenticated customer calls `PUT /api/cart/items/{id}` with a new quantity, THE System SHALL update the CartItem quantity.
-6. WHEN an authenticated customer calls `DELETE /api/cart/items/{id}`, THE System SHALL remove that CartItem from the cart.
-7. WHEN an authenticated customer calls `DELETE /api/cart/clear`, THE System SHALL remove all CartItems from the cart.
-8. THE System SHALL calculate the cart total as the sum of (product.price * cartitem.quantity) for all items in the cart.
-9. IF a customer attempts to add an inactive product to the cart, THEN THE System SHALL return a 400 response.
+4.1 Each authenticated customer has exactly one cart (created on first item add).
+4.2 Adding a product that already exists in the cart increments the quantity.
+4.3 Cart item quantity must be between 1 and the product's available stock.
+4.4 Attempting to add an out-of-stock product returns HTTP 400 with a descriptive error.
+4.5 Cart total is always the sum of (product.price × quantity) for all active cart items.
+4.6 Removing the last item from a cart leaves the cart empty (not deleted).
+4.7 Cart clear endpoint removes all items in one operation.
+4.8 Cart reflects real-time product prices (no price snapshot at add time in MVP).
+4.9 Inactive or deleted products in cart are excluded from total and flagged in response.
 
 ---
 
-### Requirement 9: Order Checkout and Multi-Vendor Splitting
+## 5. Order System (Multi-Vendor)
 
-**User Story:** As a customer, I want to check out my cart in a single operation, so that I can purchase items from multiple vendors simultaneously.
+### User Stories
 
-#### Acceptance Criteria
+- As a customer, I want to checkout my cart and create an order so I can receive my products.
+- As a customer, I want to view my order history and individual order details.
+- As a customer, I want to cancel a pending order.
+- As a vendor, I want to see only the order items that belong to my products.
+- As a vendor, I want to update the fulfillment status of my order items.
 
-1. WHEN an authenticated customer calls `POST /api/orders/checkout` with a non-empty cart, THE System SHALL create a single Order containing one OrderItem per cart item, each with a vendor FK.
-2. WHEN checkout is initiated, THE System SHALL validate that all cart items have sufficient stock before creating the order.
-3. IF any cart item has insufficient stock at checkout time, THEN THE System SHALL return a 400 response listing the out-of-stock items and SHALL NOT create any order or decrement any stock.
-4. WHEN an order is successfully created, THE System SHALL decrement the stock of each purchased product by the ordered quantity using select_for_update() to prevent race conditions.
-5. WHEN an order is successfully created, THE System SHALL clear the customer's cart.
-6. THE Order total_amount SHALL equal the sum of (unit_price * quantity) for all OrderItems in that order.
-7. THE OrderItem model SHALL store the vendor FK separately to support per-vendor order management.
-8. THE OrderItem model SHALL have its own status field (pending/processing/shipped/delivered/cancelled) independent of the parent Order status.
-9. THE Order status SHALL be derived from the aggregate of its OrderItem statuses according to defined aggregation rules.
-10. WHEN a customer calls `GET /api/orders`, THE System SHALL return a paginated list of that customer's orders.
-11. WHEN a customer calls `GET /api/orders/{id}`, THE System SHALL return the full order detail including all OrderItems grouped by vendor.
-12. WHEN a customer calls `POST /api/orders/{id}/cancel` for a pending order, THE System SHALL cancel the order, restore stock for all items, and return a 200 response.
-13. IF a customer attempts to cancel an order that is not in pending status, THEN THE System SHALL return a 400 response.
+### Acceptance Criteria
 
----
-
-### Requirement 10: Vendor Order Management
-
-**User Story:** As a vendor, I want to view and manage the order items assigned to me, so that I can fulfill customer orders.
-
-#### Acceptance Criteria
-
-1. WHEN an authenticated vendor calls `GET /api/vendor/orders`, THE System SHALL return only the OrderItems belonging to that vendor.
-2. WHEN an authenticated vendor calls `PATCH /api/vendor/orders/{item_id}/status` with a valid status, THE System SHALL update that OrderItem's status.
-3. IF a vendor attempts to update an OrderItem that does not belong to them, THEN THE System SHALL return a 403 response.
-4. WHEN an OrderItem status is updated, THE System SHALL recalculate and update the parent Order's aggregate status.
+5.1 Checkout validates that all cart items have sufficient stock before creating any order.
+5.2 If any item is out of stock, the entire checkout is rejected with item-level error details.
+5.3 On successful checkout: Order is created, OrderItems are created (one per cart item with vendor denormalized), stock is decremented, cart is cleared.
+5.4 Each OrderItem records: product, vendor, quantity, unit_price (snapshot at order time), subtotal, and its own status.
+5.5 Order total_amount equals the sum of all OrderItem subtotals.
+5.6 Order status transitions: pending → confirmed (on payment) → shipped → delivered → cancelled/refunded.
+5.7 OrderItem status transitions (vendor-controlled): pending → processing → shipped → delivered.
+5.8 Order status auto-aggregates: all items delivered → order=delivered; any item cancelled → order reflects partial state.
+5.9 Vendors can only update status of OrderItems belonging to their own products.
+5.10 Customers can cancel an order only when order status is pending or confirmed.
+5.11 Cancellation triggers stock restoration for all order items.
+5.12 Concurrent checkout race conditions are prevented using select_for_update() on product stock.
 
 ---
 
-### Requirement 11: Payment Processing
+## 6. Payment System
 
-**User Story:** As a customer, I want to pay for my order, so that the purchase is confirmed and fulfillment begins.
+### User Stories
 
-#### Acceptance Criteria
+- As a customer, I want to pay for my order using a simulated payment so the order is confirmed.
+- As a customer, I want a refund when I cancel a confirmed order.
+- As an admin, I want to view payment records for all orders.
 
-1. WHEN an authenticated customer calls `POST /api/payments/process` with a valid order_id and payment_method, THE System SHALL create a Payment record and simulate payment processing via payment_service.py.
-2. WHEN payment simulation succeeds, THE System SHALL update the Payment status to completed and the Order status to confirmed.
-3. WHEN payment simulation fails, THE System SHALL update the Payment status to failed and SHALL NOT advance the Order status.
-4. WHEN a customer calls `GET /api/payments/{order_id}`, THE System SHALL return the payment details for that order.
-5. IF a customer attempts to pay for an order they do not own, THEN THE System SHALL return a 403 response.
-6. THE payment_service.py module SHALL provide an abstraction layer so that the payment provider can be swapped without changing the Order or Payment models.
-7. WHEN a refund is initiated for a completed payment, THE System SHALL update the Payment status to refunded and restore the Order status to cancelled.
-8. THE Payment model SHALL store a transaction_id field for external reference.
+### Acceptance Criteria
 
----
-
-### Requirement 12: Purchase-Verified Reviews
-
-**User Story:** As a customer, I want to leave reviews only for products I have purchased, so that reviews are trustworthy.
-
-#### Acceptance Criteria
-
-1. WHEN an authenticated customer calls `POST /api/products/{id}/reviews` with a rating and comment, THE System SHALL verify that the customer has a delivered OrderItem for that product before creating the review.
-2. IF a customer attempts to review a product they have not purchased and received, THEN THE System SHALL return a 403 response.
-3. THE System SHALL enforce that a customer can submit at most one review per product.
-4. IF a customer attempts to submit a second review for the same product, THEN THE System SHALL return a 400 response.
-5. WHEN a review is created or updated, THE System SHALL recalculate and update the associated vendor's average rating.
-6. WHEN any user calls `GET /api/products/{id}/reviews`, THE System SHALL return all reviews for that product with reviewer name and rating.
-7. THE Review model SHALL enforce that rating is an integer between 1 and 5 inclusive.
+6.1 Each order has exactly one Payment record.
+6.2 Payment methods supported: card, upi, wallet, cod.
+6.3 Simulated payment: POST /api/payments/process with order_id and payment_method → marks payment completed → updates order to confirmed.
+6.4 Payment failure (simulated by passing fail=true) leaves order in pending status and does NOT decrement stock.
+6.5 Stock is only decremented after payment is confirmed (not at order creation).
+6.6 Refund flow: cancel order → payment status → refunded → stock restored.
+6.7 Payment service is abstracted via payment_service.py to allow future Razorpay/Stripe integration.
+6.8 Transaction IDs are generated as UUIDs for simulated payments.
 
 ---
 
-### Requirement 13: Analytics and Reporting
+## 7. Review System
 
-**User Story:** As an admin, I want to view platform-wide analytics, so that I can monitor business performance.
+### User Stories
 
-#### Acceptance Criteria
+- As a customer, I want to review a product I purchased so I can share my experience.
+- As a customer, I want to read reviews for a product before buying.
+- As a vendor, I want my overall rating to reflect my product quality.
 
-1. WHEN an admin calls `GET /api/admin/analytics/overview`, THE System SHALL return total revenue, total orders, total customers, and total vendors.
-2. WHEN an admin calls `GET /api/admin/analytics/sales` with optional date range parameters, THE System SHALL return aggregated sales data grouped by day, week, or month.
-3. WHEN an admin calls `GET /api/admin/analytics/sales`, THE System SHALL include top 10 vendors by revenue and top 10 products by units sold.
-4. IF a non-admin user attempts to access admin analytics endpoints, THEN THE System SHALL return a 403 response.
-5. THE SalesRecord model SHALL capture order_id, vendor_id, product_id, quantity, revenue, and timestamp for each completed OrderItem.
+### Acceptance Criteria
 
----
-
-### Requirement 14: Vendor Analytics
-
-**User Story:** As a vendor, I want to view my own sales analytics, so that I can understand my business performance.
-
-#### Acceptance Criteria
-
-1. WHEN an authenticated vendor calls `GET /api/vendor/analytics`, THE System SHALL return that vendor's total revenue, total orders, and top 5 products by revenue.
-2. THE System SHALL filter vendor analytics to include only data belonging to the requesting vendor.
-3. IF a non-vendor user attempts to access `/api/vendor/analytics`, THEN THE System SHALL return a 403 response.
+7.1 A user can only review a product if they have a delivered OrderItem for that product.
+7.2 A user can submit only one review per product (unique constraint on user + product).
+7.3 Rating must be an integer between 1 and 5 inclusive.
+7.4 Review comment is optional (max 1000 characters).
+7.5 Vendor rating is automatically recalculated as the average of all ratings across all their products after each review submission.
+7.6 Reviews are publicly readable without authentication.
+7.7 A user can update or delete their own review.
+7.8 Review response includes: reviewer username (not email), rating, comment, created_at.
 
 ---
 
-### Requirement 15: Trending Products
+## 8. Analytics System
 
-**User Story:** As a customer, I want to see trending products, so that I can discover popular items.
+### User Stories
 
-#### Acceptance Criteria
+- As an admin, I want to see platform-wide revenue, order counts, and top performers.
+- As a vendor, I want to see my own revenue trends and top-selling products.
+- As a customer, I want to see trending products on the homepage.
 
-1. WHEN any user calls `GET /api/products/trending`, THE System SHALL return the top 10 products by order count within the last 7 days.
-2. THE System SHALL calculate trending scores using a time-windowed count of OrderItems with status not equal to cancelled.
-3. THE trending products response SHALL include product name, vendor, price, and order count within the window.
+### Acceptance Criteria
 
----
-
-### Requirement 16: AI-Powered Recommendations
-
-**User Story:** As a customer, I want to see "customers also bought" recommendations, so that I can discover related products.
-
-#### Acceptance Criteria
-
-1. WHEN any user calls `GET /api/products/{id}/recommendations`, THE System SHALL return up to 5 products that frequently co-occur with the given product in completed orders.
-2. THE recommendation_service.py module SHALL compute co-occurrence by counting how many distinct orders contain both the target product and each candidate product.
-3. THE System SHALL return recommendations sorted by co-occurrence count in descending order.
-4. IF a product has no co-occurrence data, THE System SHALL return an empty recommendations list.
+8.1 Admin analytics overview returns: total revenue, total orders, total customers, total vendors, total products.
+8.2 Admin sales analytics supports time range filtering (daily, weekly, monthly, custom date range).
+8.3 Admin analytics returns top 10 vendors by revenue and top 10 products by units sold.
+8.4 Vendor analytics returns: own total revenue, order count, top 5 products, revenue by day for last 30 days.
+8.5 Trending products are calculated based on order frequency in the last 7 days (configurable window).
+8.6 SalesRecord is created for each delivered OrderItem to enable historical analytics.
+8.7 Analytics endpoints are read-only and require appropriate role permissions.
 
 ---
 
-### Requirement 17: Performance and Scalability
+## 9. Recommendation & AI Features
 
-**User Story:** As a platform operator, I want the API to perform efficiently under load, so that customers have a fast experience.
+### User Stories
 
-#### Acceptance Criteria
+- As a customer, I want to see "customers also bought" recommendations on product pages.
+- As a customer, I want to see trending products on the homepage.
 
-1. THE System SHALL apply select_related and prefetch_related on all list view querysets that traverse foreign key or reverse foreign key relationships.
-2. THE System SHALL define database indexes on all foreign key fields and on status fields used in filtering.
-3. THE System SHALL paginate all list endpoints with a default page size of 20 items.
-4. THE System SHALL use Django Q objects for all multi-condition filter queries.
-5. WHEN a product list query includes filters, THE System SHALL apply all filters in a single database query.
+### Acceptance Criteria
 
----
-
-### Requirement 18: Security and Access Control
-
-**User Story:** As a platform operator, I want strict access control and input validation, so that the platform is secure and data is protected.
-
-#### Acceptance Criteria
-
-1. THE System SHALL require a valid JWT access token for all endpoints except product listing, product detail, category listing, vendor public profile, and auth endpoints.
-2. THE System SHALL implement custom permission classes: IsVendor, IsAdmin, and IsVendorOwner.
-3. THE IsVendorOwner permission SHALL verify that the requesting vendor owns the resource being accessed.
-4. THE System SHALL use select_for_update() when decrementing product stock during checkout to prevent concurrent overselling.
-5. THE System SHALL validate all incoming request data using DRF serializers before processing.
-6. THE System SHALL prevent stock from being decremented below zero under any sequence of concurrent requests.
-7. WHEN a payment fails, THE System SHALL roll back any stock decrements performed during that checkout attempt.
-8. THE JWT access token SHALL expire after 1 hour and the refresh token SHALL expire after 7 days.
+9.1 "Customers also bought" is computed from order co-occurrence: products frequently ordered together.
+9.2 Recommendations return up to 5 products, excluding the current product and out-of-stock items.
+9.3 Trending products endpoint returns top 10 products by order count in the last 7 days.
+9.4 Vendor performance score = (average_rating × 0.4) + (normalized_sales_volume × 0.6), used for vendor ranking.
+9.5 Recommendation results are cached (Django cache framework, 1-hour TTL) to avoid repeated heavy queries.
 
 ---
 
-### Requirement 19: Edge Case Handling
+## 10. Performance Requirements
 
-**User Story:** As a platform operator, I want the system to handle edge cases gracefully, so that data integrity is maintained under all conditions.
+10.1 All list views use select_related/prefetch_related to avoid N+1 queries.
+10.2 Database indexes are defined on: all FK fields, order.status, order.user, order_item.vendor, product.category, product.is_active.
+10.3 All list endpoints support pagination (PageNumberPagination, 20/page default, configurable via query param).
+10.4 Complex filtering uses Django Q objects; no raw SQL in views.
+10.5 Checkout uses database transactions (atomic) to ensure consistency.
 
-#### Acceptance Criteria
+---
 
-1. IF all items in a cart are out of stock at checkout, THEN THE System SHALL return a 400 response and SHALL NOT create an order.
-2. IF some but not all items in a cart are out of stock at checkout, THEN THE System SHALL return a 400 response listing the unavailable items and SHALL NOT partially fulfill the order.
-3. WHEN a payment fails after stock has been decremented, THE System SHALL restore all decremented stock quantities within the same database transaction.
-4. WHEN two customers attempt to checkout the last unit of a product simultaneously, THE System SHALL allow exactly one to succeed and return a stock error to the other.
-5. IF an order is cancelled after payment, THE System SHALL initiate a refund via payment_service.py and restore stock.
+## 11. Security Requirements
+
+11.1 All non-public endpoints require JWT authentication.
+11.2 Custom DRF permissions: IsVendor, IsAdmin, IsVendorOwner (resource-level), IsCustomer.
+11.3 Vendors cannot access other vendors' products, orders, or analytics.
+11.4 Customers cannot access vendor-only or admin-only endpoints.
+11.5 All input is validated through DRF serializers; no raw request.data access in views.
+11.6 CORS is configured (currently open for development; restrict in production).
+11.7 Secret key and database credentials must be moved to environment variables for production.
+11.8 Rate limiting should be applied to auth endpoints (login, register) to prevent brute force.
+
+---
+
+## 12. Admin Capabilities
+
+12.1 Admin can view all users, vendors, products, orders, payments, and reviews.
+12.2 Admin can approve/reject vendor applications.
+12.3 Admin can deactivate any user account.
+12.4 Admin can view platform-wide analytics dashboard.
+12.5 Django admin panel is configured for all models with search, filter, and list_display.
