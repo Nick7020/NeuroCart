@@ -99,12 +99,16 @@ export function Checkout() {
         <div className="bg-white border border-gray-100 rounded-2xl p-6 h-fit sticky top-24 shadow-sm">
           <h2 className="font-bold text-gray-900 mb-5">Order Summary</h2>
           <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-            {items.map(item => (
-              <div key={item._id} className="flex justify-between text-sm text-gray-500">
-                <span className="truncate mr-2">{item.product?.name} × {item.quantity}</span>
-                <span className="flex-shrink-0">{formatCurrency(item.price * item.quantity)}</span>
-              </div>
-            ))}
+            {items.map(item => {
+              const price = item.product?.price ?? item.price ?? 0
+              const name  = item.product?.name  ?? item.name  ?? '—'
+              return (
+                <div key={item.id ?? item._id} className="flex justify-between text-sm text-gray-500">
+                  <span className="truncate mr-2">{name} × {item.quantity}</span>
+                  <span className="flex-shrink-0">{formatCurrency(price * item.quantity)}</span>
+                </div>
+              )
+            })}
           </div>
           <hr className="border-gray-100 mb-4" />
           <div className="space-y-2 text-sm">

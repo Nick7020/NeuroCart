@@ -17,23 +17,26 @@ export function OrderCard({ order, onUpdate }) {
   const [loading, setLoading] = useState(null)
   const [invoice, setInvoice] = useState(null)
 
+  // Support both backend shape (id, total_amount) and mock shape (_id, totalAmount)
+  const orderId = order.id || order._id
   const s = STATUS_STYLE[order.status] || STATUS_STYLE.PENDING
-  const subtotal = (order.items || []).reduce((s, i) => s + i.price * i.quantity, 0)
+  const subtotal = order.total_amount
+    ? Number(order.total_amount)
+    : (order.items || []).reduce((s, i) => s + (i.unit_price ?? i.price) * i.quantity, 0)
   const total = subtotal * 1.18
 
   const handleAccept = async () => {
     setLoading('accept')
     try {
-      await vendorService.acceptOrder(order._id)
-      const orderId = 'VLO' + Date.now()
+      await vendorService.acceptOrder(orderId)
       const inv = {
-        orderId,
+        orderId: 'VLO' + Date.now(),
         order: { ...order, status: 'CONFIRMED' },
         createdAt: new Date().toISOString(),
       }
       const { data } = await invoiceService.create(inv)
       setInvoice(data.invoice || inv)
-      onUpdate(order._id, 'CONFIRMED')
+      onUpdate(orderId, 'CONFIRMED')
       notify('Order accepted & invoice generated!', 'success')
     } catch { notify('Failed to accept', 'error') }
     finally { setLoading(null) }
@@ -42,8 +45,8 @@ export function OrderCard({ order, onUpdate }) {
   const handleReject = async () => {
     setLoading('reject')
     try {
-      await vendorService.rejectOrder(order._id)
-      onUpdate(order._id, 'CANCELLED')
+      await vendorService.rejectOrder(orderId)
+      onUpdate(orderId, 'CANCELLED')
       notify('Order rejected', 'info')
     } catch { notify('Failed to reject', 'error') }
     finally { setLoading(null) }
@@ -57,8 +60,8 @@ export function OrderCard({ order, onUpdate }) {
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="font-bold text-gray-900 text-sm">#{order._id?.slice(-8).toUpperCase()}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
+            <p className="font-bold text-gray-900 text-sm">#{(orderId)?.toString().slice(-8).toUpperCase()}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{formatDate(order.created_at || order.createdAt)}</p>
           </div>
           <span className="badge font-semibold text-xs px-3 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>
             {s.label}
@@ -87,7 +90,9 @@ export function OrderCard({ order, onUpdate }) {
           <Package size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             {(order.items || []).slice(0, 2).map((item, i) => (
-              <p key={i} className="text-xs text-gray-600">{item.product?.name} × {item.quantity} — {formatCurrency(item.price * item.quantity)}</p>
+              <p key={i} className="text-xs text-gray-600">
+                {item.product?.name} × {item.quantity} — {formatCurrency((item.unit_price ?? item.price) * item.quantity)}
+              </p>
             ))}
             {order.items?.length > 2 && <p className="text-xs text-gray-400">+{order.items.length - 2} more items</p>}
           </div>
@@ -132,7 +137,7 @@ export function OrderCard({ order, onUpdate }) {
           {order.status === 'CONFIRMED' && (
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => setInvoice({ orderId: 'VLO' + order._id, order, createdAt: order.createdAt })}
+              onClick={() => setInvoice({ orderId: 'VLO' + orderId, order, createdAt: order.created_at || order.createdAt })}
               className="flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm text-white shadow-md"
               style={{ background: 'linear-gradient(135deg,#1A3263,#547792)', boxShadow: '0 4px 12px rgba(26,50,99,0.25)' }}
             >

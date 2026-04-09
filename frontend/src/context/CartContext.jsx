@@ -13,8 +13,9 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     if (user) {
+      // vendors and admins don't have a cart
+      if (user.role === 'vendor' || user.role === 'admin') { setItems([]); return }
       if (MOCK_MODE) {
-        // restore cart from sessionStorage in mock mode
         const saved = sessionStorage.getItem('mockCart')
         setItems(saved ? JSON.parse(saved) : [])
       } else {
@@ -61,7 +62,7 @@ export function CartProvider({ children }) {
       })
       return
     }
-    const { data } = await cartService.add({ productId, quantity })
+    const { data } = await cartService.add({ product_id: productId, quantity })
     setItems(data.items)
   }
 
@@ -90,7 +91,7 @@ export function CartProvider({ children }) {
     setItems([])
   }
 
-  const total = items.reduce((s, i) => s + i.price * i.quantity, 0)
+  const total = items.reduce((s, i) => s + (i.product?.price ?? i.price ?? 0) * i.quantity, 0)
   const count = items.reduce((s, i) => s + i.quantity, 0)
 
   return (

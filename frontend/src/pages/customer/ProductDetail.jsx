@@ -22,10 +22,15 @@ export function ProductDetail() {
   const { data, loading } = useFetch(() => productService.getById(id), [id])
   const product = data?.product || data
 
+  // Normalize images: backend detail returns [{image_url, ...}], carousel needs string[]
+  const imageUrls = (product?.images || []).map(img =>
+    typeof img === 'string' ? img : img.image_url
+  ).filter(Boolean)
+
   const handleAdd = async () => {
     setAdding(true)
     try {
-      await addItem(product._id, qty)
+      await addItem(product.id, qty)
       notify(`${product.name} added to cart! 🛒`, 'success')
     } catch { notify('Failed to add', 'error') }
     finally { setAdding(false) }
@@ -41,7 +46,7 @@ export function ProductDetail() {
       </button>
 
       <div className="grid md:grid-cols-2 gap-10 mb-12">
-        <ImageCarousel images={product.images} productName={product.name} />
+        <ImageCarousel images={imageUrls} productName={product.name} />
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
           <div>

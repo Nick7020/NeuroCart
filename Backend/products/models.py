@@ -37,6 +37,8 @@ class Product(models.Model):
     name        = models.CharField(max_length=500)
     description = models.TextField()
     price       = models.DecimalField(max_digits=10, decimal_places=2)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    discount    = models.PositiveSmallIntegerField(default=0, help_text='Discount percentage 0-100')
     stock       = models.PositiveIntegerField(default=0)
     is_active   = models.BooleanField(default=True)
     created_at  = models.DateTimeField(auto_now_add=True)

@@ -18,6 +18,21 @@ class RegisterView(APIView):
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        # Auto-create vendor profile if registering as vendor
+        if user.role == 'vendor':
+            from vendors.models import VendorProfile
+            shop_name = request.data.get('shop_name') or request.data.get('storeName') or f"{user.first_name or user.email.split('@')[0]}'s Store"
+            description = request.data.get('description', '')
+            VendorProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'shop_name': shop_name,
+                    'description': description,
+                    'verification_status': 'approved',  # auto-approve on registration
+                }
+            )
+
         tokens = RefreshToken.for_user(user)
         return Response({
             'user': UserProfileSerializer(user).data,
